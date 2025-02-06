@@ -1,0 +1,39 @@
+/* Importando a fonte Montserrat */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+/* Estilo para o cabeçalho */
+.main-header {
+    background-color: #000; /* Fundo preto */
+    color: white;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centraliza o conteúdo do cabeçalho */
+    position: relative;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centraliza o conteúdo (foto + título) */
+    text-align: center; /* Garante que o título também fique centralizado */
+}
+
+.profile-photo {
+    border-radius: 50%; /* Foto circular */
+    width: 300px; /* Tamanho máximo da foto */
+    height: 300px; /* Altura da foto */
+    margin-right: 20px;
+    position: absolute; /* Faz a imagem transbordar */
+    top: 50%; /* Alinha verticalmente no centro */
+    left: 50%;
+    transform: translate(-50%, -50%); /* Ajusta a imagem para transbordar */
+}
+
+h1 {
+    font-family: 'Montserrat', sans-serif; /* Fonte Montserrat */
+    font-size: 36px;
+    font-weight: 700; /* Peso da fonte */
+    z-index: 1; /* Garante que o título esteja acima da imagem */
+    margin-left: 340px; /* Ajusta a posição do título, à direita da foto */
+}
