@@ -1,9 +1,8 @@
-/* Este é um Componente de Servidor por padrão.
-  Ele vai rodar no servidor, seguro e protegido pelo middleware.
-*/
+// src/app/admin/page.tsx
 import Link from 'next/link'
+// --- 1. IMPORTA O NOVO BOTÃO ---
+import LogoutButton from '@/components/LogoutButton' // Verifica o caminho
 
-// Esta será a página em http://localhost:3000/admin
 export default function AdminDashboard() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-900">
@@ -11,9 +10,9 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold text-black dark:text-white mb-8 text-center">
           Painel Administrativo
         </h1>
-        
+
         <div className="space-y-4">
-          {/* Link para Gerenciar Experiências */}
+          {/* Links para Gerenciar */}
           <Link 
             href="/admin/experiences" 
             className="block w-full text-center p-4 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
@@ -21,7 +20,6 @@ export default function AdminDashboard() {
             Gerenciar Experiências
           </Link>
 
-          {/* Link para Gerenciar Skills */}
           <Link 
             href="/admin/skills" 
             className="block w-full text-center p-4 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
@@ -29,7 +27,6 @@ export default function AdminDashboard() {
             Gerenciar Competências
           </Link>
 
-          {/* Link para Editar Perfil */}
           <Link 
             href="/admin/profile" 
             className="block w-full text-center p-4 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
@@ -37,7 +34,12 @@ export default function AdminDashboard() {
             Editar Perfil
           </Link>
 
-          {/* TODO: Adicionar um botão de Logout */}
+          {/* Divisor */}
+          <hr className="border-zinc-300 dark:border-zinc-700 my-6" />
+
+          {/* --- 2. ADICIONA O BOTÃO DE LOGOUT AQUI --- */}
+          <LogoutButton />
+
         </div>
       </main>
     </div>
