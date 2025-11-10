@@ -1,0 +1,34 @@
+// Este é o conector para o seu .env
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  // Esta linha é nova e corrige onde o 'npm run dev' procura o cliente gerado
+  output   = "../src/generated/prisma" 
+}
+
+// 1. Modelo para o Perfil (só terá 1 linha)
+model profile {
+  id    Int    @id @default(1) // Usamos 1 como ID fixo
+  name  String
+  title String
+}
+
+// 2. Modelo para as Skills
+model skills {
+  id    Int    @id @default(autoincrement())
+  name  String
+  level Int
+}
+
+// 3. Modelo para as Experiências (AGORA CORRETO)
+model experiences {
+  id          Int    @id @default(autoincrement())
+  company     String
+  role        String // <-- Corrigido (era 'title')
+  period      String // <-- Corrigido (era 'start_date'/'end_date')
+  description String // <-- Corrigido (era 'description_points' Json)
+}
