@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // ESSA LINHA É FUNDAMENTAL PARA O DEPLOY NA HOSTINGER
-  output: 'export',
+  // output: 'export',
   
   // Opcional: Se você estiver usando o componente <Image /> do Next
   // e não quiser usar um serviço de otimização de imagem

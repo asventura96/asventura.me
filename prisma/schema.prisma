@@ -1,4 +1,3 @@
-// Este é o conector para o seu .env
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
@@ -6,29 +5,32 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
-  // Esta linha é nova e corrige onde o 'npm run dev' procura o cliente gerado
-  output   = "../src/generated/prisma" 
 }
 
-// 1. Modelo para o Perfil (só terá 1 linha)
 model profile {
-  id    Int    @id @default(1) // Usamos 1 como ID fixo
+  id    Int    @id @default(1)
   name  String
   title String
 }
 
-// 2. Modelo para as Skills
 model skills {
   id    Int    @id @default(autoincrement())
   name  String
   level Int
 }
 
-// 3. Modelo para as Experiências (AGORA CORRETO)
 model experiences {
-  id          Int    @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   company     String
-  role        String // <-- Corrigido (era 'title')
-  period      String // <-- Corrigido (era 'start_date'/'end_date')
-  description String // <-- Corrigido (era 'description_points' Json)
+  role        String
+  period      String  // (Campo antigo, vamos preencher automaticamente)
+  description String  @db.Text // (Campo antigo, vamos usar para 'Atividades')
+
+  // --- CAMPOS NOVOS ADICIONADOS ---
+  location    String? // O '?' significa que é opcional
+  start_date  String? // Data de Admissão (Ex: 10/2021)
+  end_date    String? // Data de Desligamento (Ex: 05/2025)
+  is_current  Boolean @default(false) // Checkbox "Atualmente"
+  salary      String? // Salário (Opcional)
+  exit_reason String? // Motivo do Desligamento (Opcional)
 }
