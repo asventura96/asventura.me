@@ -14,9 +14,10 @@ model profile {
 }
 
 model skills {
-  id    Int    @id @default(autoincrement())
-  name  String
-  level Int
+  id          Int     @id @default(autoincrement())
+  name        String  // Ex: "Python & Django", "WordPress (Elementor)"
+  description String  @db.Text // Ex: "Conhecimento prático em Python com experiência..."
+  category    String  // Ex: "Back-end", "Front-end", "Ferramentas", "Soft Skill"
 }
 
 model experiences {
