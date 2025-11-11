@@ -3,7 +3,6 @@
 
 import { useState, useTransition } from 'react'
 import { updateProfile } from '@/app/admin/profile/actions' 
-// --- 1. IMPORTA A BIBLIOTECA DE MÁSCARA CORRETA ---
 import { IMaskInput } from 'react-imask'
 
 // --- (Funções de cálculo de Idade e Signo - sem mudanças) ---
@@ -72,7 +71,7 @@ export default function ProfileForm({ profileData }: { profileData: any }) {
   return (
     <form action={handleSubmit} className="space-y-8">
 
-      {/* ... (Seção de Informações Básicas - sem mudanças) ... */}
+      {/* --- SEÇÃO: INFORMAÇÕES BÁSICAS --- */}
       <div className="space-y-6 p-4 border border-gray-200 dark:border-zinc-700 rounded-lg">
         <h2 className="text-lg font-semibold text-black dark:text-white">Informações Básicas</h2>
         <div>
@@ -87,10 +86,28 @@ export default function ProfileForm({ profileData }: { profileData: any }) {
           <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">Local (Ex: Belo Horizonte, MG)</label>
           <input id="location" name="location" type="text" className={inputStyle} defaultValue={profileData.location || ''} />
         </div>
+
+        {/* --- CAMPO NOVO ADICIONADO AQUI --- */}
+        <div>
+          <label htmlFor="photo_url" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">Caminho da Foto de Perfil</label>
+          <input
+            id="photo_url"
+            name="photo_url"
+            type="text"
+            className={inputStyle}
+            defaultValue={profileData.photo_url || ''}
+            placeholder="Ex: /minha-foto.jpg"
+          />
+          <p className="mt-1 text-xs text-gray-500 dark:text-zinc-400">
+            Coloque sua foto na pasta `public` e use o caminho (começando com /).
+          </p>
+        </div>
+
       </div>
 
-      {/* --- SEÇÃO: CONTATO (COM A MÁSCARA CORRETA) --- */}
+      {/* --- SEÇÃO: CONTATO (COM MÁSCARA) --- */}
       <div className="space-y-6 p-4 border border-gray-200 dark:border-zinc-700 rounded-lg">
+        {/* ... (código do contato com máscara) ... */}
         <h2 className="text-lg font-semibold text-black dark:text-white">Contato</h2>
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">Email</label>
@@ -98,7 +115,6 @@ export default function ProfileForm({ profileData }: { profileData: any }) {
         </div>
         <div>
           <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">Telefone</label>
-          {/* --- 2. SUBSTITUI O INPUT PELA MÁSCARA 'react-imask' --- */}
           <IMaskInput
             mask="+55 (00) 00000-0000"
             id="phone"

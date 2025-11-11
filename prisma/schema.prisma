@@ -31,6 +31,7 @@ model profile {
   // (Usamos @db.Text para textos longos)
   personal_summary String?   @db.Text // "Perfil Pessoal" / "Carta de Apresentação"
   professional_objectives String? @db.Text // "Objetivos Profissionais"
+  photo_url      String?   // URL da foto do perfil
 }
 
 model skills {

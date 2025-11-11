@@ -1,12 +1,10 @@
-// src/app/page.tsx (Versão Final para o Público)
+// src/app/page.tsx (Versão Final com Foto)
 
 import { prisma } from '@/lib/prismaClient';
 import Link from 'next/link';
+import Image from 'next/image'; // <-- IMPORTA O COMPONENTE DE IMAGEM
 
 // --- 1. FUNÇÕES AUXILIARES (PARA IDADE E SIGNO) ---
-// (Estas rodam no servidor para calcular os teus dados)
-
-/** Calcula a idade a partir de uma data de nascimento */
 function getAge(birthDate: Date): number | null {
   if (!birthDate) return null;
   const today = new Date();
@@ -18,7 +16,6 @@ function getAge(birthDate: Date): number | null {
   return age;
 }
 
-/** Calcula o signo a partir de uma data */
 function getZodiacSign(birthDate: Date): string {
   if (!birthDate) return "---";
   const day = birthDate.getDate() + 1; // Ajuste para fuso
@@ -39,7 +36,6 @@ function getZodiacSign(birthDate: Date): string {
   return "---";
 }
 
-/** Agrupa as competências por categoria */
 function groupSkillsByCategory(skills: any[]) {
   return skills.reduce((acc, skill) => {
     const category = skill.category || 'Outras';
@@ -54,7 +50,6 @@ function groupSkillsByCategory(skills: any[]) {
 // --- 2. FUNÇÃO DE BUSCA DE DADOS (Atualizada) ---
 async function getData() {
   try {
-    // Busca o perfil (agora com todos os campos)
     const profile = await prisma.profile.findFirst({ where: { id: 1 } });
 
     const experiences = await prisma.experiences.findMany({
@@ -86,7 +81,6 @@ export default async function Home() {
 
   const { profile, skills, experiences } = await getData();
 
-  // Se o perfil não for encontrado, mostra uma mensagem de erro
   if (!profile) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
@@ -98,7 +92,6 @@ export default async function Home() {
     )
   }
 
-  // Calcula os dados derivados
   const skillsByCategory = groupSkillsByCategory(skills);
   const age = profile.birthdate ? getAge(profile.birthdate) : null;
   const sign = profile.birthdate ? getZodiacSign(profile.birthdate) : null;
@@ -108,7 +101,23 @@ export default async function Home() {
       <main className="w-full max-w-3xl p-8 bg-white dark:bg-zinc-900 shadow-xl rounded-xl">
 
         {/* --- SEÇÃO 1: CABEÇALHO E CONTATO --- */}
-        <div>
+
+        {/* --- Bloco da Foto (Adicionado) --- */}
+        {profile.photo_url && (
+          <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-indigo-600 dark:border-indigo-400 shadow-lg">
+            <Image
+              src={profile.photo_url} // Ex: /minha-foto.jpg
+              alt={`Foto de ${profile.name}`}
+              width={128} // Deve ser igual ao w-32
+              height={128} // Deve ser igual ao h-32
+              // 'object-cover' garante que a imagem preencha o círculo sem distorcer
+              className="w-full h-full object-cover" 
+              priority // Carrega a foto principal mais rápido
+            />
+          </div>
+        )}
+
+        <div className="text-center"> {/* Centraliza o texto do cabeçalho */}
           <h1 className="text-4xl font-bold text-black dark:text-white">{profile.name}</h1>
           <p className="text-xl text-indigo-600 dark:text-indigo-400 mb-6">{profile.title}</p>
 
@@ -123,7 +132,7 @@ export default async function Home() {
           </ul>
 
           {/* Links Sociais */}
-          <div className="flex space-x-4 mb-8">
+          <div className="flex space-x-4 mb-8 justify-center">
             {profile.linkedin_url && (
               <Link href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" 
                     className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
@@ -145,7 +154,8 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* --- SEÇÃO 2: PERFIL PESSOAL E OBJETIVOS --- */}
+        {/* --- (Resto das seções: Sobre Mim, Objetivos, Experiência, Competências - sem mudanças) --- */}
+
         {profile.personal_summary && (
           <div className="mt-10">
             <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
@@ -164,7 +174,6 @@ export default async function Home() {
           </div>
         )}
 
-        {/* --- SEÇÃO 3: EXPERIÊNCIA PROFISSIONAL --- */}
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
             Experiência Profissional
@@ -175,14 +184,12 @@ export default async function Home() {
                 <h3 className="text-lg font-semibold text-black dark:text-white">{exp.role}</h3>
                 <p className="font-medium text-gray-800 dark:text-zinc-200">{exp.company}</p>
                 <p className="text-sm text-gray-500 dark:text-zinc-400">{exp.period} · {exp.location}</p>
-                {/* A 'description' agora são as tuas 'atividades' */}
                 <p className="mt-2 text-gray-700 dark:text-zinc-300 whitespace-pre-line">{exp.description}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* --- SEÇÃO 4: COMPETÊNCIAS (Novo Formato) --- */}
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
             Competências
