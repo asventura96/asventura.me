@@ -75,3 +75,19 @@ model Education {
 
   description String?  @db.Text // Opcional
 }
+
+model Course {
+  id          Int      @id @default(autoincrement())
+
+  name        String   // O nome do curso/certificação
+  type        String   // Tipo (Curso ou Certificação) - Será <select>
+  institution String   // Instituição emitente
+  date        String   // Data (mm/aaaa)
+  workload    String?  // Carga-horária (Opcional, ex: "40 horas")
+
+  // Competências adquiridas (um campo de texto para listá-las)
+  skills_acquired String?  @db.Text 
+
+  url         String?  // URL do certificado (Opcional)
+  notes       String?  @db.Text // Observações (Opcional)
+}

@@ -1,4 +1,4 @@
-// src/app/page.tsx (Versão Final com Formação Acadêmica)
+// src/app/page.tsx (Versão Final Completa)
 
 import { prisma } from '@/lib/prismaClient';
 import Link from 'next/link';
@@ -6,7 +6,6 @@ import Image from 'next/image';
 
 // --- 1. FUNÇÕES AUXILIARES (PARA IDADE E SIGNO) ---
 function getAge(birthDate: Date): number | null {
-  // ... (código da função getAge - sem mudanças)
   if (!birthDate) return null;
   const today = new Date();
   let age = today.getFullYear() - birthDate.getFullYear();
@@ -18,7 +17,6 @@ function getAge(birthDate: Date): number | null {
 }
 
 function getZodiacSign(birthDate: Date): string {
-  // ... (código da função getZodiacSign - sem mudanças)
   if (!birthDate) return "---";
   const day = birthDate.getDate() + 1; 
   const month = birthDate.getMonth() + 1;
@@ -38,7 +36,6 @@ function getZodiacSign(birthDate: Date): string {
 }
 
 function groupSkillsByCategory(skills: any[]) {
-  // ... (código da função groupSkillsByCategory - sem mudanças)
   return skills.reduce((acc, skill) => {
     const category = skill.category || 'Outras';
     if (!acc[category]) {
@@ -62,17 +59,22 @@ async function getData() {
       orderBy: { category: 'asc' }
     });
 
-    // --- ATUALIZAÇÃO AQUI ---
-    // Agora também busca a formação
     const education = await prisma.education.findMany({
-      orderBy: { id: 'desc' } // Podes ordenar por 'start_date' se preferir
+      orderBy: { id: 'desc' } 
+    });
+
+    // --- ATUALIZAÇÃO AQUI ---
+    // Agora também busca os cursos
+    const courses = await prisma.course.findMany({
+      orderBy: { id: 'desc' }
     });
 
     return {
       profile: profile,
       skills: skills || [],
       experiences: experiences || [],
-      education: education || [] // <-- Retorna os dados de educação
+      education: education || [],
+      courses: courses || [] // <-- Retorna os dados de cursos
     };
 
   } catch (error) {
@@ -81,7 +83,8 @@ async function getData() {
       profile: null,
       skills: [],
       experiences: [],
-      education: [] // <-- Retorna vazio em caso de erro
+      education: [],
+      courses: [] // <-- Retorna vazio em caso de erro
     };
   }
 }
@@ -90,7 +93,7 @@ async function getData() {
 export default async function Home() {
 
   // Busca TODOS os dados
-  const { profile, skills, experiences, education } = await getData();
+  const { profile, skills, experiences, education, courses } = await getData();
 
   if (!profile) {
     // ... (código de erro - sem mudanças)
@@ -114,7 +117,6 @@ export default async function Home() {
 
         {/* --- SEÇÃO 1: CABEÇALHO E CONTATO --- */}
         {profile.photo_url && (
-          // ... (código da foto - sem mudanças)
           <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-indigo-600 dark:border-indigo-400 shadow-lg">
             <Image
               src={profile.photo_url} 
@@ -131,7 +133,6 @@ export default async function Home() {
           <p className="text-xl text-indigo-600 dark:text-indigo-400 mb-6">{profile.title}</p>
 
           <ul className="text-sm text-gray-700 dark:text-zinc-300 space-y-2 mb-6">
-            {/* ... (código dos contatos - sem mudanças) ... */}
             {profile.location && <li><span>📍</span> {profile.location}</li>}
             {profile.email && <li><Link href={`mailto:${profile.email}`} className="hover:underline"><span>✉️</span> {profile.email}</Link></li>}
             {profile.phone && <li><Link href={`tel:${profile.phone}`} className="hover:underline"><span>📞</span> {profile.phone}</Link></li>}
@@ -141,7 +142,6 @@ export default async function Home() {
           </ul>
 
           <div className="flex space-x-4 mb-8 justify-center">
-            {/* ... (código das redes sociais - sem mudanças) ... */}
             {profile.linkedin_url && (
               <Link href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" 
                     className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
@@ -165,7 +165,6 @@ export default async function Home() {
 
         {/* --- SEÇÃO 2: SOBRE MIM E OBJETIVOS --- */}
         {profile.personal_summary && (
-          // ... (código Sobre Mim - sem mudanças) ...
           <div className="mt-10">
             <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
               Sobre Mim
@@ -175,7 +174,6 @@ export default async function Home() {
         )}
 
         {profile.professional_objectives && (
-          // ... (código Objetivos - sem mudanças) ...
           <div className="mt-10">
             <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
               Objetivos Profissionais
@@ -190,7 +188,6 @@ export default async function Home() {
             Experiência Profissional
           </h2>
           <div className="space-y-6">
-            {/* ... (código loop de Experiências - sem mudanças) ... */}
             {experiences.map((exp) => (
               <div key={exp.id} className="pl-4">
                 <h3 className="text-lg font-semibold text-black dark:text-white">{exp.role}</h3>
@@ -202,7 +199,7 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* --- NOVA SEÇÃO 4: FORMAÇÃO ACADÊMICA --- */}
+        {/* --- SEÇÃO 4: FORMAÇÃO ACADÊMICA --- */}
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
             Formação Acadêmica
@@ -226,13 +223,41 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* --- SEÇÃO 5: COMPETÊNCIAS --- */}
+        {/* --- NOVA SEÇÃO 5: CURSOS E CERTIFICAÇÕES --- */}
+        <div className="mt-10">
+          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
+            Cursos e Certificações
+          </h2>
+          <div className="space-y-6">
+            {courses.map((course) => (
+              <div key={course.id} className="pl-4">
+                <h3 className="text-lg font-semibold text-black dark:text-white">{course.name}</h3>
+                <p className="font-medium text-gray-800 dark:text-zinc-200">{course.institution}</p>
+                <p className="text-sm text-gray-500 dark:text-zinc-400">
+                  {course.type} · {course.date} {course.workload ? `(${course.workload})` : ''}
+                </p>
+                {course.skills_acquired && (
+                   <p className="mt-2 text-gray-700 dark:text-zinc-300 text-sm">
+                    <strong>Competências:</strong> {course.skills_acquired}
+                   </p>
+                )}
+                {course.url && (
+                   <Link href={course.url} target="_blank" rel="noopener noreferrer" 
+                         className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
+                     Ver Certificado &rarr;
+                   </Link>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* --- SEÇÃO 6: COMPETÊNCIAS --- */}
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
             Competências
           </h2>
           <div className="space-y-6">
-            {/* ... (código loop de Competências - sem mudanças) ... */}
             {Object.keys(skillsByCategory).map((category) => (
               <div key={category}>
                 <h3 className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-2">

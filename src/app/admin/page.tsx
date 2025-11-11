@@ -26,12 +26,19 @@ export default function AdminDashboard() {
             Gerenciar Competências
           </Link>
 
-          {/* --- BOTÃO CORRIGIDO COM O TEU TERMO --- */}
           <Link 
-            href="/admin/education" // <-- O novo link (vai dar 404 por enquanto)
+            href="/admin/education"
             className="block w-full text-center p-4 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
           >
             Gerenciar Formação Acadêmica
+          </Link>
+
+          {/* --- BOTÃO NOVO ADICIONADO AQUI --- */}
+          <Link 
+            href="/admin/courses" // <-- O novo link (vai dar 404 por agora)
+            className="block w-full text-center p-4 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+          >
+            Gerenciar Cursos e Certificações
           </Link>
 
           <Link 
