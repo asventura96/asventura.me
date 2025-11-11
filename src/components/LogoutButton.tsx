@@ -4,7 +4,7 @@
 import { signOut } from 'next-auth/react'
 
 export default function LogoutButton() {
-
+  
   const handleLogout = () => {
     signOut({ callbackUrl: '/admin/login' })
   }
@@ -12,9 +12,9 @@ export default function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="block w-full text-center p-3 bg-[color:var(--acento-laranja)] text-white rounded-lg font-medium hover:opacity-90 transition-colors"
+      className="flex items-center justify-center px-6 py-2 bg-[color:var(--acento-laranja)] text-white rounded-lg font-semibold hover:opacity-90 transition-opacity"
     >
-      Sair (Logout)
+      <i className="fas fa-sign-out-alt mr-2"></i> Sair (Logout)
     </button>
   )
 }

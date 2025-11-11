@@ -29,26 +29,27 @@ export default function SignInPage() {
       setError('Credenciais inválidas. Tente novamente.')
     }
   }
-
-  // Estilo dos inputs para o tema escuro
-  const inputStyle = "mt-1 block w-full px-3 py-2 border border-zinc-700 rounded-md shadow-sm bg-zinc-800 text-white focus:outline-none focus:ring-[color:var(--acento-verde)] focus:border-[color:var(--acento-verde)]";
+  
+  const inputStyle = "mt-1 block w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm bg-zinc-100 text-black focus:outline-none focus:ring-[color:var(--acento-verde)] focus:border-[color:var(--acento-verde)]";
 
   return (
-    // O layout "cagado" foi removido.
-    // A página de login agora tem o seu próprio "cartão"
-    <div className="flex min-h-screen items-center justify-center bg-fundo-dark">
-      <main className="w-full max-w-md p-8 bg-zinc-900 shadow-xl rounded-xl">
-        <h1 className="text-3xl text-center text-texto-principal mb-6">
-          Login Admin
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <main className="w-full max-w-md p-8 bg-white shadow-xl rounded-xl">
+        
+        <h1 
+          className="text-3xl text-center text-black mb-6"
+          style={{ fontFamily: 'var(--font-concert-one)' }} // Usa a tua fonte de título
+        >
+          Acesso ao Painel
         </h1>
-
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label 
               htmlFor="username" 
-              className="block text-sm font-medium text-texto-secundario"
+              className="block text-sm font-medium text-zinc-700"
             >
-              Usuário
+              Nome de usuário / E-mail:
             </label>
             <input
               id="username"
@@ -62,9 +63,9 @@ export default function SignInPage() {
           <div>
             <label 
               htmlFor="password" 
-              className="block text-sm font-medium text-texto-secundario"
+              className="block text-sm font-medium text-zinc-700"
             >
-              Senha
+              Senha:
             </label>
             <input
               id="password"
@@ -84,9 +85,9 @@ export default function SignInPage() {
           <div>
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[color:var(--acento-verde)] hover:opacity-90"
+              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[color:var(--acento-laranja)] hover:opacity-90"
             >
-              Entrar
+              <i className="fas fa-arrow-right mr-2"></i> Acessar
             </button>
           </div>
         </form>
