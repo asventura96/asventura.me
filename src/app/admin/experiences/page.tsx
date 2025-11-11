@@ -1,8 +1,10 @@
 // src/app/admin/experiences/page.tsx
 import { prisma } from '@/lib/prismaClient'
 import Link from 'next/link'
-// --- 1. IMPORTA O NOVO BOTÃO ---
-import DeleteExperienceButton from '@/components/DeleteExperienceButton' // Verifica o caminho, pode ser ../../components/
+
+// Importa a Server Action de exclusão e o novo botão genérico
+import { deleteExperience } from '@/app/admin/experiences/actions' 
+import DeleteButton from '@/components/DeleteButton' 
 
 async function getExperiences() {
   const experiences = await prisma.experiences.findMany({
@@ -17,7 +19,7 @@ export default async function AdminExperiencesPage() {
   return (
     <div className="flex min-h-screen justify-center bg-zinc-100 dark:bg-zinc-900">
       <main className="w-full max-w-3xl p-8 my-12 bg-white dark:bg-black shadow-xl rounded-xl">
-        
+
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-black dark:text-white">
             Gerenciar Experiências
@@ -40,7 +42,7 @@ export default async function AdminExperiencesPage() {
           <h2 className="text-xl font-semibold text-gray-800 dark:text-zinc-100 border-b pb-2">
             Experiências Cadastradas
           </h2>
-          
+
           {experiences.length === 0 ? (
             <p className="text-gray-500 dark:text-zinc-400">Nenhuma experiência cadastrada.</p>
           ) : (
@@ -53,14 +55,18 @@ export default async function AdminExperiencesPage() {
                   <h3 className="font-semibold text-lg text-black dark:text-white">{exp.role}</h3>
                   <p className="text-gray-600 dark:text-zinc-300">{exp.company}</p>
                 </div>
-                
-                {/* --- 2. ADICIONA OS BOTÕES DE AÇÃO --- */}
+
                 <div className="flex items-center space-x-4">
                   <Link href={`/admin/experiences/edit/${exp.id}`} className="text-sm text-blue-500 hover:underline">
                     Editar
                   </Link>
                   <span className="text-gray-300 dark:text-zinc-600">|</span>
-                  <DeleteExperienceButton id={exp.id} />
+
+                  {/* Usamos o botão genérico e passamos a AÇÃO específica
+                    (deleteExperience) como uma prop.
+                  */}
+                  <DeleteButton id={exp.id} deleteAction={deleteExperience} />
+
                 </div>
 
               </div>

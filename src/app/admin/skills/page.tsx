@@ -1,8 +1,10 @@
-// src/app/admin/skills/page.tsx
+// src/app/admin/skills/page.tsx (Refatorado)
 import { prisma } from '@/lib/prismaClient'
 import Link from 'next/link'
-// --- 1. IMPORTA O NOVO BOTÃO ---
-import DeleteSkillButton from '@/components/DeleteSkillButton' // Verifica o caminho
+
+// 1. Importa a Ação de exclusão e o Botão Genérico
+import { deleteSkill } from '@/app/admin/skills/actions' 
+import DeleteButton from '@/components/DeleteButton' 
 
 async function getSkills() {
   const skills = await prisma.skills.findMany({
@@ -55,13 +57,16 @@ export default async function AdminSkillsPage() {
                     <p className="text-sm font-medium text-indigo-500 dark:text-indigo-400">{skill.category}</p>
                   </div>
 
-                  {/* --- 2. SUBSTITUI O BOTÃO ANTIGO PELO NOVO COMPONENTE --- */}
+                  {/* 2. Substituição aqui */}
                   <div className="flex items-center space-x-4 flex-shrink-0 ml-4">
                     <Link href={`/admin/skills/edit/${skill.id}`} className="text-sm text-blue-500 hover:underline">
                       Editar
                     </Link>
                     <span className="text-gray-300 dark:text-zinc-600">|</span>
-                    <DeleteSkillButton id={skill.id} />
+
+                    {/* Usamos o botão genérico e passamos a AÇÃO específica */}
+                    <DeleteButton id={skill.id} deleteAction={deleteSkill} />
+
                   </div>
                 </div>
 
