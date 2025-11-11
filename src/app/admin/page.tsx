@@ -33,12 +33,19 @@ export default function AdminDashboard() {
             Gerenciar Formação Acadêmica
           </Link>
 
-          {/* --- BOTÃO NOVO ADICIONADO AQUI --- */}
           <Link 
-            href="/admin/courses" // <-- O novo link (vai dar 404 por agora)
+            href="/admin/courses"
             className="block w-full text-center p-4 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
           >
             Gerenciar Cursos e Certificações
+          </Link>
+
+          {/* --- BOTÃO NOVO ADICIONADO AQUI --- */}
+          <Link 
+            href="/admin/languages" // <-- O novo link (vai dar 404 por agora)
+            className="block w-full text-center p-4 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+          >
+            Gerenciar Idiomas
           </Link>
 
           <Link 

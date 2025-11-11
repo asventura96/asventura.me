@@ -1,12 +1,12 @@
-// src/app/page.tsx (Versão Final com Ordenação Correta)
+// src/app/page.tsx (Versão Final com Ordenação de Idiomas Corrigida)
 
 import { prisma } from '@/lib/prismaClient';
 import Link from 'next/link';
 import Image from 'next/image'; 
 
-// --- 1. FUNÇÕES AUXILIARES (PARA IDADE, SIGNO, GRUPOS) ---
-// ... (Estas funções não mudam)
+// --- 1. FUNÇÕES AUXILIARES (PARA IDADE, SIGNO, GRUPOS, ORDENAÇÃO) ---
 function getAge(birthDate: Date): number | null {
+  // ... (código da função getAge - sem mudanças)
   if (!birthDate) return null;
   const today = new Date();
   let age = today.getFullYear() - birthDate.getFullYear();
@@ -18,6 +18,7 @@ function getAge(birthDate: Date): number | null {
 }
 
 function getZodiacSign(birthDate: Date): string {
+  // ... (código da função getZodiacSign - sem mudanças)
   if (!birthDate) return "---";
   const day = birthDate.getDate() + 1; 
   const month = birthDate.getMonth() + 1;
@@ -37,6 +38,7 @@ function getZodiacSign(birthDate: Date): string {
 }
 
 function groupSkillsByCategory(skills: any[]) {
+  // ... (código da função groupSkillsByCategory - sem mudanças)
   return skills.reduce((acc, skill) => {
     const category = skill.category || 'Outras';
     if (!acc[category]) {
@@ -47,73 +49,69 @@ function groupSkillsByCategory(skills: any[]) {
   }, {} as Record<string, any[]>);
 }
 
-// --- NOVA FUNÇÃO AUXILIAR PARA ORDENAR DATAS 'mm/aaaa' ---
 function sortEntriesByDate(entries: any[], dateField: string) {
-  // Converte "mm/aaaa" num número (ex: "08/2021" -> 202108)
+  // ... (código da função sortEntriesByDate - sem mudanças)
   const toSortableNumber = (dateString: string): number => {
-    if (!dateString || !dateString.includes('/')) {
-      return 0; // Coloca itens sem data no fim
-    }
+    if (!dateString || !dateString.includes('/')) { return 0; }
     const parts = dateString.split('/');
     if (parts.length !== 2) return 0;
-    
     const month = parseInt(parts[0], 10);
     const year = parseInt(parts[1], 10);
-    
     if (isNaN(month) || isNaN(year)) return 0;
-    
     return year * 100 + month;
   };
-
   return entries.sort((a, b) => {
     const dateA = toSortableNumber(a[dateField]);
     const dateB = toSortableNumber(b[dateField]);
-    // Ordena do maior (mais recente) para o menor (mais antigo)
     return dateB - dateA; 
   });
 }
 
-
-// --- 2. FUNÇÃO DE BUSCA DE DADOS (ATUALIZADA COM ORDENAÇÃO) ---
+// --- 2. FUNÇÃO DE BUSCA DE DADOS (ATUALIZADA) ---
 async function getData() {
   try {
     const profile = await prisma.profile.findFirst({ where: { id: 1 } });
-    
-    // 1. Busca os dados (sem ordenação do banco)
-    const experiences = await prisma.experiences.findMany();
     const skills = await prisma.skills.findMany({ orderBy: { category: 'asc' } });
+
+    const experiences = await prisma.experiences.findMany();
     const education = await prisma.education.findMany();
     const courses = await prisma.course.findMany();
-    
-    // 2. Ordena os dados em JavaScript (mais recente primeiro)
+
+    // --- ATUALIZAÇÃO AQUI ---
+    // Pede ao Prisma para ordenar os idiomas por nome, em ordem ascendente (A-Z)
+    const languages = await prisma.language.findMany({
+      orderBy: { name: 'asc' } 
+    }); 
+
+    // Ordena os dados em JavaScript (mais recente primeiro)
     const sortedExperiences = sortEntriesByDate(experiences || [], 'start_date');
     const sortedEducation = sortEntriesByDate(education || [], 'start_date');
-    const sortedCourses = sortEntriesByDate(courses || [], 'date'); // Usa o campo 'date'
+    const sortedCourses = sortEntriesByDate(courses || [], 'date');
 
     return {
       profile: profile,
       skills: skills || [],
-      experiences: sortedExperiences, // Retorna os dados ordenados
-      education: sortedEducation,   // Retorna os dados ordenados
-      courses: sortedCourses      // Retorna os dados ordenados
+      experiences: sortedExperiences,
+      education: sortedEducation,
+      courses: sortedCourses,
+      languages: languages || [] // <-- Retorna os dados de idiomas (agora ordenados)
     };
 
   } catch (error) {
     console.error("Erro ao buscar dados do banco:", error);
     return {
-      profile: null, skills: [], experiences: [], education: [], courses: []
+      profile: null, skills: [], experiences: [], education: [], courses: [], languages: []
     };
   }
 }
 
-// --- 3. O COMPONENTE (PÁGINA PÚBLICA - Sem mudanças no HTML) ---
+// --- 3. O COMPONENTE (PÁGINA PÚBLICA - HTML SEM MUDANÇAS) ---
 export default async function Home() {
-  
-  // Busca TODOS os dados (já ordenados pela getData)
-  const { profile, skills, experiences, education, courses } = await getData();
-  
+
+  const { profile, skills, experiences, education, courses, languages } = await getData();
+
   if (!profile) {
-    // ... (código de erro - sem mudanças)
+    // ... (código de erro)
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
         <main className="w-full max-w-3xl p-8 bg-white dark:bg-zinc-900 shadow-xl rounded-xl">
@@ -123,7 +121,7 @@ export default async function Home() {
       </div>
     )
   }
-  
+
   const skillsByCategory = groupSkillsByCategory(skills);
   const age = profile.birthdate ? getAge(profile.birthdate) : null;
   const sign = profile.birthdate ? getZodiacSign(profile.birthdate) : null;
@@ -131,8 +129,8 @@ export default async function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black py-12">
       <main className="w-full max-w-3xl p-8 bg-white dark:bg-zinc-900 shadow-xl rounded-xl">
-        
-        {/* --- SEÇÃO 1: CABEÇALHO E CONTATO --- */}
+
+        {/* --- SEÇÃO 1: PERFIL (CABEÇALHO) --- */}
         {profile.photo_url && (
           <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-indigo-600 dark:border-indigo-400 shadow-lg">
             <Image
@@ -148,7 +146,7 @@ export default async function Home() {
         <div className="text-center"> 
           <h1 className="text-4xl font-bold text-black dark:text-white">{profile.name}</h1>
           <p className="text-xl text-indigo-600 dark:text-indigo-400 mb-6">{profile.title}</p>
-          
+
           <ul className="text-sm text-gray-700 dark:text-zinc-300 space-y-2 mb-6">
             {profile.location && <li><span>📍</span> {profile.location}</li>}
             {profile.email && <li><Link href={`mailto:${profile.email}`} className="hover:underline"><span>✉️</span> {profile.email}</Link></li>}
@@ -157,7 +155,7 @@ export default async function Home() {
               <li><span>👤</span> {age} anos, {sign}, {profile.marital_status}</li>
             )}
           </ul>
-          
+
           <div className="flex space-x-4 mb-8 justify-center">
             {profile.linkedin_url && (
               <Link href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" 
@@ -179,8 +177,8 @@ export default async function Home() {
             )}
           </div>
         </div>
-        
-        {/* --- SEÇÃO 2: SOBRE MIM E OBJETIVOS --- */}
+
+        {/* --- SEÇÃO 2: SOBRE MIM --- */}
         {profile.personal_summary && (
           <div className="mt-10">
             <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
@@ -189,7 +187,8 @@ export default async function Home() {
             <p className="text-gray-700 dark:text-zinc-300 whitespace-pre-line">{profile.personal_summary}</p>
           </div>
         )}
-        
+
+        {/* --- SEÇÃO 3: OBJETIVOS PROFISSIONAIS --- */}
         {profile.professional_objectives && (
           <div className="mt-10">
             <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
@@ -199,26 +198,7 @@ export default async function Home() {
           </div>
         )}
 
-        {/* --- SEÇÃO 3: EXPERIÊNCIA PROFISSIONAL --- */}
-        {/* (Agora será renderizado na ordem correta) */}
-        <div className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
-            Experiência Profissional
-          </h2>
-          <div className="space-y-6">
-            {experiences.map((exp) => (
-              <div key={exp.id} className="pl-4">
-                <h3 className="text-lg font-semibold text-black dark:text-white">{exp.role}</h3>
-                <p className="font-medium text-gray-800 dark:text-zinc-200">{exp.company}</p>
-                <p className="text-sm text-gray-500 dark:text-zinc-400">{exp.period} · {exp.location}</p>
-                <p className="mt-2 text-gray-700 dark:text-zinc-300 whitespace-pre-line">{exp.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* --- SEÇÃO 4: FORMAÇÃO ACADÊMICA --- */}
-        {/* (Agora será renderizado na ordem correta) */}
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
             Formação Acadêmica
@@ -242,8 +222,62 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* --- SEÇÃO 5: CURSOS E CERTIFICAÇÕES --- */}
-        {/* (Agora será renderizado na ordem correta) */}
+        {/* --- SEÇÃO 5: IDIOMAS --- */}
+        {/* (Agora será renderizado em ordem alfabética) */}
+        <div className="mt-10">
+          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
+            Idiomas
+          </h2>
+          <div className="space-y-2 pl-4">
+            {languages.map((lang) => (
+              <p key={lang.id} className="text-gray-700 dark:text-zinc-300">
+                <strong className="font-semibold text-black dark:text-white">{lang.name}:</strong> {lang.level}
+              </p>
+            ))}
+          </div>
+        </div>
+
+        {/* --- SEÇÃO 6: EXPERIÊNCIA PROFISSIONAL --- */}
+        <div className="mt-10">
+          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
+            Experiência Profissional
+          </h2>
+          <div className="space-y-6">
+            {experiences.map((exp) => (
+              <div key={exp.id} className="pl-4">
+                <h3 className="text-lg font-semibold text-black dark:text-white">{exp.role}</h3>
+                <p className="font-medium text-gray-800 dark:text-zinc-200">{exp.company}</p>
+                <p className="text-sm text-gray-500 dark:text-zinc-400">{exp.period} · {exp.location}</p>
+                <p className="mt-2 text-gray-700 dark:text-zinc-300 whitespace-pre-line">{exp.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* --- SEÇÃO 7: HABILIDADES E COMPETÊNCIAS --- */}
+        <div className="mt-10">
+          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
+            Habilidades e Competências
+          </h2>
+          <div className="space-y-6">
+            {Object.keys(skillsByCategory).map((category) => (
+              <div key={category}>
+                <h3 className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
+                  {category}
+                </h3>
+                <ul className="list-disc list-inside space-y-1">
+                  {skillsByCategory[category].map((skill) => (
+                    <li key={skill.id} className="text-gray-700 dark:text-zinc-300">
+                      <strong className="font-semibold text-black dark:text-white">{skill.name}:</strong> {skill.description}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* --- SEÇÃO 8: CURSOS E CERTIFICAÇÕES --- */}
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
             Cursos e Certificações
@@ -271,31 +305,7 @@ export default async function Home() {
             ))}
           </div>
         </div>
-        
-        {/* --- SEÇÃO 6: COMPETÊNCIAS --- */}
-        {/* (Esta seção é ordenada por Categoria, o que está correto) */}
-        <div className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
-            Competências
-          </h2>
-          <div className="space-y-6">
-            {Object.keys(skillsByCategory).map((category) => (
-              <div key={category}>
-                <h3 className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
-                  {category}
-                </h3>
-                <ul className="list-disc list-inside space-y-1">
-                  {skillsByCategory[category].map((skill) => (
-                    <li key={skill.id} className="text-gray-700 dark:text-zinc-300">
-                      <strong className="font-semibold text-black dark:text-white">{skill.name}:</strong> {skill.description}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-        
+
       </main>
     </div>
   );
