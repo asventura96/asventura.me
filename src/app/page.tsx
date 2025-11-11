@@ -1,10 +1,11 @@
-// src/app/page.tsx (Versão Final Completa)
+// src/app/page.tsx (Versão Final com Ordenação Correta)
 
 import { prisma } from '@/lib/prismaClient';
 import Link from 'next/link';
 import Image from 'next/image'; 
 
-// --- 1. FUNÇÕES AUXILIARES (PARA IDADE E SIGNO) ---
+// --- 1. FUNÇÕES AUXILIARES (PARA IDADE, SIGNO, GRUPOS) ---
+// ... (Estas funções não mudam)
 function getAge(birthDate: Date): number | null {
   if (!birthDate) return null;
   const today = new Date();
@@ -46,55 +47,71 @@ function groupSkillsByCategory(skills: any[]) {
   }, {} as Record<string, any[]>);
 }
 
-// --- 2. FUNÇÃO DE BUSCA DE DADOS (ATUALIZADA) ---
+// --- NOVA FUNÇÃO AUXILIAR PARA ORDENAR DATAS 'mm/aaaa' ---
+function sortEntriesByDate(entries: any[], dateField: string) {
+  // Converte "mm/aaaa" num número (ex: "08/2021" -> 202108)
+  const toSortableNumber = (dateString: string): number => {
+    if (!dateString || !dateString.includes('/')) {
+      return 0; // Coloca itens sem data no fim
+    }
+    const parts = dateString.split('/');
+    if (parts.length !== 2) return 0;
+    
+    const month = parseInt(parts[0], 10);
+    const year = parseInt(parts[1], 10);
+    
+    if (isNaN(month) || isNaN(year)) return 0;
+    
+    return year * 100 + month;
+  };
+
+  return entries.sort((a, b) => {
+    const dateA = toSortableNumber(a[dateField]);
+    const dateB = toSortableNumber(b[dateField]);
+    // Ordena do maior (mais recente) para o menor (mais antigo)
+    return dateB - dateA; 
+  });
+}
+
+
+// --- 2. FUNÇÃO DE BUSCA DE DADOS (ATUALIZADA COM ORDENAÇÃO) ---
 async function getData() {
   try {
     const profile = await prisma.profile.findFirst({ where: { id: 1 } });
-
-    const experiences = await prisma.experiences.findMany({
-      orderBy: { id: 'desc' }
-    });
-
-    const skills = await prisma.skills.findMany({
-      orderBy: { category: 'asc' }
-    });
-
-    const education = await prisma.education.findMany({
-      orderBy: { id: 'desc' } 
-    });
-
-    // --- ATUALIZAÇÃO AQUI ---
-    // Agora também busca os cursos
-    const courses = await prisma.course.findMany({
-      orderBy: { id: 'desc' }
-    });
+    
+    // 1. Busca os dados (sem ordenação do banco)
+    const experiences = await prisma.experiences.findMany();
+    const skills = await prisma.skills.findMany({ orderBy: { category: 'asc' } });
+    const education = await prisma.education.findMany();
+    const courses = await prisma.course.findMany();
+    
+    // 2. Ordena os dados em JavaScript (mais recente primeiro)
+    const sortedExperiences = sortEntriesByDate(experiences || [], 'start_date');
+    const sortedEducation = sortEntriesByDate(education || [], 'start_date');
+    const sortedCourses = sortEntriesByDate(courses || [], 'date'); // Usa o campo 'date'
 
     return {
       profile: profile,
       skills: skills || [],
-      experiences: experiences || [],
-      education: education || [],
-      courses: courses || [] // <-- Retorna os dados de cursos
+      experiences: sortedExperiences, // Retorna os dados ordenados
+      education: sortedEducation,   // Retorna os dados ordenados
+      courses: sortedCourses      // Retorna os dados ordenados
     };
 
   } catch (error) {
     console.error("Erro ao buscar dados do banco:", error);
     return {
-      profile: null,
-      skills: [],
-      experiences: [],
-      education: [],
-      courses: [] // <-- Retorna vazio em caso de erro
+      profile: null, skills: [], experiences: [], education: [], courses: []
     };
   }
 }
 
-// --- 3. O COMPONENTE (PÁGINA PÚBLICA) ---
+// --- 3. O COMPONENTE (PÁGINA PÚBLICA - Sem mudanças no HTML) ---
 export default async function Home() {
-
-  // Busca TODOS os dados
+  
+  // Busca TODOS os dados (já ordenados pela getData)
   const { profile, skills, experiences, education, courses } = await getData();
-
+  
   if (!profile) {
     // ... (código de erro - sem mudanças)
     return (
@@ -106,7 +123,7 @@ export default async function Home() {
       </div>
     )
   }
-
+  
   const skillsByCategory = groupSkillsByCategory(skills);
   const age = profile.birthdate ? getAge(profile.birthdate) : null;
   const sign = profile.birthdate ? getZodiacSign(profile.birthdate) : null;
@@ -114,7 +131,7 @@ export default async function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black py-12">
       <main className="w-full max-w-3xl p-8 bg-white dark:bg-zinc-900 shadow-xl rounded-xl">
-
+        
         {/* --- SEÇÃO 1: CABEÇALHO E CONTATO --- */}
         {profile.photo_url && (
           <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-indigo-600 dark:border-indigo-400 shadow-lg">
@@ -131,7 +148,7 @@ export default async function Home() {
         <div className="text-center"> 
           <h1 className="text-4xl font-bold text-black dark:text-white">{profile.name}</h1>
           <p className="text-xl text-indigo-600 dark:text-indigo-400 mb-6">{profile.title}</p>
-
+          
           <ul className="text-sm text-gray-700 dark:text-zinc-300 space-y-2 mb-6">
             {profile.location && <li><span>📍</span> {profile.location}</li>}
             {profile.email && <li><Link href={`mailto:${profile.email}`} className="hover:underline"><span>✉️</span> {profile.email}</Link></li>}
@@ -140,7 +157,7 @@ export default async function Home() {
               <li><span>👤</span> {age} anos, {sign}, {profile.marital_status}</li>
             )}
           </ul>
-
+          
           <div className="flex space-x-4 mb-8 justify-center">
             {profile.linkedin_url && (
               <Link href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" 
@@ -162,7 +179,7 @@ export default async function Home() {
             )}
           </div>
         </div>
-
+        
         {/* --- SEÇÃO 2: SOBRE MIM E OBJETIVOS --- */}
         {profile.personal_summary && (
           <div className="mt-10">
@@ -172,7 +189,7 @@ export default async function Home() {
             <p className="text-gray-700 dark:text-zinc-300 whitespace-pre-line">{profile.personal_summary}</p>
           </div>
         )}
-
+        
         {profile.professional_objectives && (
           <div className="mt-10">
             <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
@@ -183,6 +200,7 @@ export default async function Home() {
         )}
 
         {/* --- SEÇÃO 3: EXPERIÊNCIA PROFISSIONAL --- */}
+        {/* (Agora será renderizado na ordem correta) */}
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
             Experiência Profissional
@@ -200,6 +218,7 @@ export default async function Home() {
         </div>
 
         {/* --- SEÇÃO 4: FORMAÇÃO ACADÊMICA --- */}
+        {/* (Agora será renderizado na ordem correta) */}
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
             Formação Acadêmica
@@ -223,7 +242,8 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* --- NOVA SEÇÃO 5: CURSOS E CERTIFICAÇÕES --- */}
+        {/* --- SEÇÃO 5: CURSOS E CERTIFICAÇÕES --- */}
+        {/* (Agora será renderizado na ordem correta) */}
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
             Cursos e Certificações
@@ -251,8 +271,9 @@ export default async function Home() {
             ))}
           </div>
         </div>
-
+        
         {/* --- SEÇÃO 6: COMPETÊNCIAS --- */}
+        {/* (Esta seção é ordenada por Categoria, o que está correto) */}
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
             Competências
@@ -274,7 +295,7 @@ export default async function Home() {
             ))}
           </div>
         </div>
-
+        
       </main>
     </div>
   );
