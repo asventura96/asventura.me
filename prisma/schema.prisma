@@ -8,9 +8,29 @@ generator client {
 }
 
 model profile {
-  id    Int    @id @default(1)
-  name  String
-  title String
+  id            Int       @id @default(1)
+  name          String
+  title         String
+
+  // --- NOVOS CAMPOS DE CONTATO ---
+  email         String?   // O '?' significa opcional
+  phone         String?   // Ex: "+55 (31) 99999-9999"
+  location      String?   // Ex: "Belo Horizonte, MG"
+
+  // --- NOVOS CAMPOS DE REDES SOCIAIS ---
+  linkedin_url  String?
+  github_url    String?
+  website_url   String?   // Para o teu asventura.me, por exemplo
+
+  // --- NOVOS CAMPOS PESSOAIS ---
+  // Data de Nascimento (para calcular idade e signo)
+  birthdate     DateTime? @db.Date 
+  marital_status String?   // Estado Civil
+
+  // --- NOVOS CAMPOS DE TEXTO LONGO ---
+  // (Usamos @db.Text para textos longos)
+  personal_summary String?   @db.Text // "Perfil Pessoal" / "Carta de Apresentação"
+  professional_objectives String? @db.Text // "Objetivos Profissionais"
 }
 
 model skills {
