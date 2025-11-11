@@ -56,3 +56,22 @@ model experiences {
   salary      String? // Salário (Opcional)
   exit_reason String? // Motivo do Desligamento (Opcional)
 }
+
+model Education {
+  id          Int      @id @default(autoincrement())
+
+  institution String   // Ex: PUC Minas
+
+  // Substituímos 'degree' por estes dois campos:
+  level       String   // Nível (Graduação, Pós, etc.) - Será <select>
+  course_name String   // Nome do Curso (Engenharia de Software)
+
+  // Campos de data (mm/aaaa)
+  start_date  String   // Ex: "08/2021"
+  end_date    String?  // Ex: "09/2026" (Opcional)
+
+  // Status (Cursando, Concluído, Trancado)
+  status      String   // Será <select>
+
+  description String?  @db.Text // Opcional
+}

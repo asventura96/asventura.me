@@ -1,7 +1,6 @@
 // src/app/admin/page.tsx
 import Link from 'next/link'
-// --- 1. IMPORTA O NOVO BOTÃO ---
-import LogoutButton from '@/components/LogoutButton' // Verifica o caminho
+import LogoutButton from '@/components/LogoutButton' // Verifique o caminho
 
 export default function AdminDashboard() {
   return (
@@ -27,6 +26,14 @@ export default function AdminDashboard() {
             Gerenciar Competências
           </Link>
 
+          {/* --- BOTÃO CORRIGIDO COM O TEU TERMO --- */}
+          <Link 
+            href="/admin/education" // <-- O novo link (vai dar 404 por enquanto)
+            className="block w-full text-center p-4 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+          >
+            Gerenciar Formação Acadêmica
+          </Link>
+
           <Link 
             href="/admin/profile" 
             className="block w-full text-center p-4 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
@@ -37,7 +44,6 @@ export default function AdminDashboard() {
           {/* Divisor */}
           <hr className="border-zinc-300 dark:border-zinc-700 my-6" />
 
-          {/* --- 2. ADICIONA O BOTÃO DE LOGOUT AQUI --- */}
           <LogoutButton />
 
         </div>

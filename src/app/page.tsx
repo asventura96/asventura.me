@@ -1,11 +1,12 @@
-// src/app/page.tsx (Versão Final com Foto)
+// src/app/page.tsx (Versão Final com Formação Acadêmica)
 
 import { prisma } from '@/lib/prismaClient';
 import Link from 'next/link';
-import Image from 'next/image'; // <-- IMPORTA O COMPONENTE DE IMAGEM
+import Image from 'next/image'; 
 
 // --- 1. FUNÇÕES AUXILIARES (PARA IDADE E SIGNO) ---
 function getAge(birthDate: Date): number | null {
+  // ... (código da função getAge - sem mudanças)
   if (!birthDate) return null;
   const today = new Date();
   let age = today.getFullYear() - birthDate.getFullYear();
@@ -17,10 +18,10 @@ function getAge(birthDate: Date): number | null {
 }
 
 function getZodiacSign(birthDate: Date): string {
+  // ... (código da função getZodiacSign - sem mudanças)
   if (!birthDate) return "---";
-  const day = birthDate.getDate() + 1; // Ajuste para fuso
+  const day = birthDate.getDate() + 1; 
   const month = birthDate.getMonth() + 1;
-
   if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return "Aquário ♒";
   if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) return "Peixes ♓";
   if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "Áries ♈";
@@ -37,6 +38,7 @@ function getZodiacSign(birthDate: Date): string {
 }
 
 function groupSkillsByCategory(skills: any[]) {
+  // ... (código da função groupSkillsByCategory - sem mudanças)
   return skills.reduce((acc, skill) => {
     const category = skill.category || 'Outras';
     if (!acc[category]) {
@@ -47,7 +49,7 @@ function groupSkillsByCategory(skills: any[]) {
   }, {} as Record<string, any[]>);
 }
 
-// --- 2. FUNÇÃO DE BUSCA DE DADOS (Atualizada) ---
+// --- 2. FUNÇÃO DE BUSCA DE DADOS (ATUALIZADA) ---
 async function getData() {
   try {
     const profile = await prisma.profile.findFirst({ where: { id: 1 } });
@@ -60,10 +62,17 @@ async function getData() {
       orderBy: { category: 'asc' }
     });
 
+    // --- ATUALIZAÇÃO AQUI ---
+    // Agora também busca a formação
+    const education = await prisma.education.findMany({
+      orderBy: { id: 'desc' } // Podes ordenar por 'start_date' se preferir
+    });
+
     return {
       profile: profile,
       skills: skills || [],
-      experiences: experiences || []
+      experiences: experiences || [],
+      education: education || [] // <-- Retorna os dados de educação
     };
 
   } catch (error) {
@@ -71,7 +80,8 @@ async function getData() {
     return {
       profile: null,
       skills: [],
-      experiences: []
+      experiences: [],
+      education: [] // <-- Retorna vazio em caso de erro
     };
   }
 }
@@ -79,9 +89,11 @@ async function getData() {
 // --- 3. O COMPONENTE (PÁGINA PÚBLICA) ---
 export default async function Home() {
 
-  const { profile, skills, experiences } = await getData();
+  // Busca TODOS os dados
+  const { profile, skills, experiences, education } = await getData();
 
   if (!profile) {
+    // ... (código de erro - sem mudanças)
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
         <main className="w-full max-w-3xl p-8 bg-white dark:bg-zinc-900 shadow-xl rounded-xl">
@@ -101,28 +113,25 @@ export default async function Home() {
       <main className="w-full max-w-3xl p-8 bg-white dark:bg-zinc-900 shadow-xl rounded-xl">
 
         {/* --- SEÇÃO 1: CABEÇALHO E CONTATO --- */}
-
-        {/* --- Bloco da Foto (Adicionado) --- */}
         {profile.photo_url && (
+          // ... (código da foto - sem mudanças)
           <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-indigo-600 dark:border-indigo-400 shadow-lg">
             <Image
-              src={profile.photo_url} // Ex: /minha-foto.jpg
+              src={profile.photo_url} 
               alt={`Foto de ${profile.name}`}
-              width={128} // Deve ser igual ao w-32
-              height={128} // Deve ser igual ao h-32
-              // 'object-cover' garante que a imagem preencha o círculo sem distorcer
+              width={128} 
+              height={128} 
               className="w-full h-full object-cover" 
-              priority // Carrega a foto principal mais rápido
+              priority 
             />
           </div>
         )}
-
-        <div className="text-center"> {/* Centraliza o texto do cabeçalho */}
+        <div className="text-center"> 
           <h1 className="text-4xl font-bold text-black dark:text-white">{profile.name}</h1>
           <p className="text-xl text-indigo-600 dark:text-indigo-400 mb-6">{profile.title}</p>
 
-          {/* Informações Pessoais e de Contato */}
           <ul className="text-sm text-gray-700 dark:text-zinc-300 space-y-2 mb-6">
+            {/* ... (código dos contatos - sem mudanças) ... */}
             {profile.location && <li><span>📍</span> {profile.location}</li>}
             {profile.email && <li><Link href={`mailto:${profile.email}`} className="hover:underline"><span>✉️</span> {profile.email}</Link></li>}
             {profile.phone && <li><Link href={`tel:${profile.phone}`} className="hover:underline"><span>📞</span> {profile.phone}</Link></li>}
@@ -131,8 +140,8 @@ export default async function Home() {
             )}
           </ul>
 
-          {/* Links Sociais */}
           <div className="flex space-x-4 mb-8 justify-center">
+            {/* ... (código das redes sociais - sem mudanças) ... */}
             {profile.linkedin_url && (
               <Link href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" 
                     className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
@@ -154,9 +163,9 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* --- (Resto das seções: Sobre Mim, Objetivos, Experiência, Competências - sem mudanças) --- */}
-
+        {/* --- SEÇÃO 2: SOBRE MIM E OBJETIVOS --- */}
         {profile.personal_summary && (
+          // ... (código Sobre Mim - sem mudanças) ...
           <div className="mt-10">
             <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
               Sobre Mim
@@ -166,6 +175,7 @@ export default async function Home() {
         )}
 
         {profile.professional_objectives && (
+          // ... (código Objetivos - sem mudanças) ...
           <div className="mt-10">
             <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
               Objetivos Profissionais
@@ -174,11 +184,13 @@ export default async function Home() {
           </div>
         )}
 
+        {/* --- SEÇÃO 3: EXPERIÊNCIA PROFISSIONAL --- */}
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
             Experiência Profissional
           </h2>
           <div className="space-y-6">
+            {/* ... (código loop de Experiências - sem mudanças) ... */}
             {experiences.map((exp) => (
               <div key={exp.id} className="pl-4">
                 <h3 className="text-lg font-semibold text-black dark:text-white">{exp.role}</h3>
@@ -190,11 +202,37 @@ export default async function Home() {
           </div>
         </div>
 
+        {/* --- NOVA SEÇÃO 4: FORMAÇÃO ACADÊMICA --- */}
+        <div className="mt-10">
+          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
+            Formação Acadêmica
+          </h2>
+          <div className="space-y-6">
+            {education.map((edu) => (
+              <div key={edu.id} className="pl-4">
+                <h3 className="text-lg font-semibold text-black dark:text-white">{edu.course_name}</h3>
+                <p className="font-medium text-gray-800 dark:text-zinc-200">{edu.institution}</p>
+                <p className="text-sm text-gray-500 dark:text-zinc-400">
+                  {edu.level} · {edu.status}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-zinc-400">
+                  {edu.start_date} - {edu.end_date || 'Atual'}
+                </p>
+                {edu.description && (
+                   <p className="mt-2 text-gray-700 dark:text-zinc-300 text-sm">{edu.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* --- SEÇÃO 5: COMPETÊNCIAS --- */}
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
             Competências
           </h2>
           <div className="space-y-6">
+            {/* ... (código loop de Competências - sem mudanças) ... */}
             {Object.keys(skillsByCategory).map((category) => (
               <div key={category}>
                 <h3 className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
