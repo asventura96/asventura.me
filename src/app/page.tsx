@@ -234,7 +234,7 @@ export default async function Home() {
                 <h3 className="text-lg font-semibold text-black dark:text-white">{course.name}</h3>
                 <p className="font-medium text-gray-800 dark:text-zinc-200">{course.institution}</p>
                 <p className="text-sm text-gray-500 dark:text-zinc-400">
-                  {course.type} · {course.date} {course.workload ? `(${course.workload}horas)` : ''}
+                  {course.type} · {course.date} {course.workload ? `(${course.workload} horas)` : ''}
                 </p>
                 {course.skills_acquired && (
                    <p className="mt-2 text-gray-700 dark:text-zinc-300 text-sm">
