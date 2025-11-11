@@ -38,7 +38,7 @@ export default function DeleteButton({ id, deleteAction }: DeleteButtonProps) {
     <button
       onClick={handleDelete}
       disabled={isPending} 
-      className="text-sm text-red-500 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+      className="text-sm text-[color:var(--acento-laranja)] hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {isPending ? 'Excluindo...' : 'Excluir'}
     </button>
