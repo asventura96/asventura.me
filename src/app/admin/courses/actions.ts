@@ -5,7 +5,17 @@ import { prisma } from '@/lib/prismaClient'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-// --- FUNÇÃO DE ADICIONAR (JÁ EXISTIA) ---
+// Função para converter o workload (que vem como string) para Int ou null
+function parseWorkload(formData: FormData): number | null {
+  const workloadString = formData.get('workload') as string
+  if (!workloadString) {
+    return null // Se for vazio, salva como nulo
+  }
+  const workloadInt = parseInt(workloadString, 10)
+  return isNaN(workloadInt) ? null : workloadInt // Se não for um número, salva como nulo
+}
+
+// --- FUNÇÃO DE ADICIONAR (Atualizada) ---
 export async function addCourse(formData: FormData) {
 
   const data = {
@@ -13,7 +23,7 @@ export async function addCourse(formData: FormData) {
     type: formData.get('type') as string,
     institution: formData.get('institution') as string,
     date: formData.get('date') as string,
-    workload: formData.get('workload') as string || null,
+    workload: parseWorkload(formData), // <-- MUDANÇA AQUI
     skills_acquired: formData.get('skills_acquired') as string || null,
     url: formData.get('url') as string || null,
     notes: formData.get('notes') as string || null,
@@ -35,7 +45,7 @@ export async function addCourse(formData: FormData) {
   redirect('/admin/courses')
 }
 
-// --- FUNÇÃO DE ATUALIZAR (JÁ EXISTIA) ---
+// --- FUNÇÃO DE ATUALIZAR (Atualizada) ---
 export async function updateCourse(formData: FormData) {
 
   const id = parseInt(formData.get('id') as string, 10)
@@ -48,7 +58,7 @@ export async function updateCourse(formData: FormData) {
     type: formData.get('type') as string,
     institution: formData.get('institution') as string,
     date: formData.get('date') as string,
-    workload: formData.get('workload') as string || null,
+    workload: parseWorkload(formData), // <-- MUDANÇA AQUI
     skills_acquired: formData.get('skills_acquired') as string || null,
     url: formData.get('url') as string || null,
     notes: formData.get('notes') as string || null,
@@ -73,23 +83,18 @@ export async function updateCourse(formData: FormData) {
   return { success: true, message: "Curso atualizado com sucesso!" }
 }
 
-// --- FUNÇÃO NOVA DE EXCLUIR ---
+// --- FUNÇÃO DE EXCLUIR (Sem mudanças) ---
 export async function deleteCourse(id: number) {
   if (!id) {
     console.error("Erro: ID não fornecido para exclusão.")
     return
   }
-
   try {
-    await prisma.course.delete({
-      where: { id: id },
-    })
+    await prisma.course.delete({ where: { id: id } })
   } catch (error) {
     console.error("Erro ao excluir curso:", error)
     return
   }
-
-  // Limpa o cache e atualiza as páginas
-  revalidatePath('/') // Atualiza o seu currículo PÚBLICO
-  revalidatePath('/admin/courses') // Atualiza a LISTA no admin
+  revalidatePath('/') 
+  revalidatePath('/admin/courses') 
 }

@@ -62,7 +62,7 @@ export default async function AdminCoursesPage() {
                     <h3 className="font-semibold text-lg text-black dark:text-white">{course.name}</h3>
                     <p className="text-gray-700 dark:text-zinc-200">{course.institution}</p>
                     <p className="text-sm text-gray-500 dark:text-zinc-400">
-                      {course.type} · {course.date} {course.workload ? `(${course.workload})` : ''}
+                      {course.type} · {course.date} {course.workload ? `(${course.workload}h)` : ''}
                     </p>
                   </div>
 

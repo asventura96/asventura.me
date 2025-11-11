@@ -83,7 +83,7 @@ model Course {
   type        String   // Tipo (Curso ou Certificação) - Será <select>
   institution String   // Instituição emitente
   date        String   // Data (mm/aaaa)
-  workload    String?  // Carga-horária (Opcional, ex: "40 horas")
+  workload    Int?     // Carga-horária (Opcional, ex: "40 horas")
 
   // Competências adquiridas (um campo de texto para listá-las)
   skills_acquired String?  @db.Text 

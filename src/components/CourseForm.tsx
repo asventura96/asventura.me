@@ -1,14 +1,11 @@
 // src/components/CourseForm.tsx
-'use client' // <-- Marca como Componente de Cliente
+'use client' 
 
 import { useTransition, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { IMaskInput } from 'react-imask' // Importa a Máscara
+import { IMaskInput } from 'react-imask' 
 
-// Define o tipo de 'action' que o formulário vai chamar
 type FormAction = (formData: FormData) => Promise<any>;
-
-// Define os dados que o formulário recebe (para pré-preencher)
 type CourseFormProps = {
   action: FormAction;
   initialData?: {
@@ -17,7 +14,7 @@ type CourseFormProps = {
     type: string;
     institution: string;
     date: string;
-    workload: string | null;
+    workload: number | null; // <-- MUDANÇA AQUI (de string para number)
     skills_acquired: string | null;
     url: string | null;
     notes: string | null;
@@ -33,7 +30,6 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
 
   const inputStyle = "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md shadow-sm dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500";
 
-  // Máscara para a data (mm/aaaa)
   const dateMask = {
     mask: 'MM/YYYY',
     blocks: {
@@ -45,11 +41,9 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
 
   const handleSubmit = (formData: FormData) => {
     setMessage(null);
-
     startTransition(async () => {
       try {
         const result = await action(formData);
-
         if (result && result.success === false) {
           setMessage({ text: result.message || "Erro desconhecido.", type: 'error' });
         } else {
@@ -89,13 +83,7 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
           <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
             Tipo (Obrigatório)
           </label>
-          <select
-            id="type"
-            name="type"
-            required
-            className={inputStyle}
-            defaultValue={initialData?.type || ''}
-          >
+          <select id="type" name="type" required className={inputStyle} defaultValue={initialData?.type || ''}>
             <option value="">Selecione o tipo</option>
             <option value="Curso">Curso</option>
             <option value="Certificação">Certificação</option>
@@ -105,7 +93,7 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
         </div>
       </div>
 
-      {/* --- Linha 2: Instituição, Data e Carga-Horária --- */}
+      {/* --- Linha 2: Instituição, Data e Carga-Horária (ATUALIZADA) --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <label htmlFor="institution" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
@@ -135,20 +123,24 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
             placeholder="05/2024"
           />
         </div>
+        {/* --- MUDANÇA AQUI --- */}
         <div>
           <label htmlFor="workload" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
-            Carga Horária (Opcional)
+            Carga Horária (em horas)
           </label>
           <input
             id="workload"
             name="workload"
-            type="text"
+            type="number" // <-- MUDANÇA
+            min="0"
             className={inputStyle}
             defaultValue={initialData?.workload || ''}
-            placeholder="Ex: 40h"
+            placeholder="Ex: 40" // <-- MUDANÇA
           />
         </div>
       </div>
+
+      {/* ... (Resto do formulário: URL, Skills, Notas, Botão - sem mudanças) ... */}
 
       {/* --- Linha 3: URL do Certificado --- */}
       <div>
