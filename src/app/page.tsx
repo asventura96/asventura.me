@@ -1,12 +1,11 @@
-// src/app/page.tsx (Versão Final com Ordenação de Idiomas Corrigida)
+// src/app/page.tsx (Corrigido com Títulos Verdes e Ícones)
 
 import { prisma } from '@/lib/prismaClient';
 import Link from 'next/link';
 import Image from 'next/image'; 
 
-// --- 1. FUNÇÕES AUXILIARES (PARA IDADE, SIGNO, GRUPOS, ORDENAÇÃO) ---
+// --- 1. FUNÇÕES AUXILIARES (Sem mudanças) ---
 function getAge(birthDate: Date): number | null {
-  // ... (código da função getAge - sem mudanças)
   if (!birthDate) return null;
   const today = new Date();
   let age = today.getFullYear() - birthDate.getFullYear();
@@ -18,7 +17,6 @@ function getAge(birthDate: Date): number | null {
 }
 
 function getZodiacSign(birthDate: Date): string {
-  // ... (código da função getZodiacSign - sem mudanças)
   if (!birthDate) return "---";
   const day = birthDate.getDate() + 1; 
   const month = birthDate.getMonth() + 1;
@@ -38,7 +36,6 @@ function getZodiacSign(birthDate: Date): string {
 }
 
 function groupSkillsByCategory(skills: any[]) {
-  // ... (código da função groupSkillsByCategory - sem mudanças)
   return skills.reduce((acc, skill) => {
     const category = skill.category || 'Outras';
     if (!acc[category]) {
@@ -50,7 +47,6 @@ function groupSkillsByCategory(skills: any[]) {
 }
 
 function sortEntriesByDate(entries: any[], dateField: string) {
-  // ... (código da função sortEntriesByDate - sem mudanças)
   const toSortableNumber = (dateString: string): number => {
     if (!dateString || !dateString.includes('/')) { return 0; }
     const parts = dateString.split('/');
@@ -67,23 +63,18 @@ function sortEntriesByDate(entries: any[], dateField: string) {
   });
 }
 
-// --- 2. FUNÇÃO DE BUSCA DE DADOS (ATUALIZADA) ---
+// --- 2. FUNÇÃO DE BUSCA DE DADOS (Sem mudanças) ---
 async function getData() {
   try {
     const profile = await prisma.profile.findFirst({ where: { id: 1 } });
     const skills = await prisma.skills.findMany({ orderBy: { category: 'asc' } });
-
     const experiences = await prisma.experiences.findMany();
     const education = await prisma.education.findMany();
     const courses = await prisma.course.findMany();
-
-    // --- ATUALIZAÇÃO AQUI ---
-    // Pede ao Prisma para ordenar os idiomas por nome, em ordem ascendente (A-Z)
     const languages = await prisma.language.findMany({
       orderBy: { name: 'asc' } 
     }); 
 
-    // Ordena os dados em JavaScript (mais recente primeiro)
     const sortedExperiences = sortEntriesByDate(experiences || [], 'start_date');
     const sortedEducation = sortEntriesByDate(education || [], 'start_date');
     const sortedCourses = sortEntriesByDate(courses || [], 'date');
@@ -94,7 +85,7 @@ async function getData() {
       experiences: sortedExperiences,
       education: sortedEducation,
       courses: sortedCourses,
-      languages: languages || [] // <-- Retorna os dados de idiomas (agora ordenados)
+      languages: languages || []
     };
 
   } catch (error) {
@@ -105,18 +96,28 @@ async function getData() {
   }
 }
 
-// --- 3. O COMPONENTE (PÁGINA PÚBLICA - HTML SEM MUDANÇAS) ---
+// --- FUNÇÃO AUXILIAR PARA TÍTULOS DE SEÇÃO (CORRIGIDA) ---
+function SectionTitle({ title }: { title: string }) {
+  return (
+    // --- MUDANÇA AQUI: Trocamos o laranja pelo VERDE ---
+    <h2 className="text-2xl mb-6 uppercase tracking-widest text-[color:var(--acento-verde)] border-b-2 border-[color:var(--acento-verde)] pb-2">
+      {title}
+    </h2>
+  )
+}
+
+// --- 3. O COMPONENTE (PÁGINA PÚBLICA) ---
 export default async function Home() {
 
   const { profile, skills, experiences, education, courses, languages } = await getData();
 
   if (!profile) {
-    // ... (código de erro)
+    // ... (código de erro - sem mudanças)
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
-        <main className="w-full max-w-3xl p-8 bg-white dark:bg-zinc-900 shadow-xl rounded-xl">
-          <h1 className="text-3xl font-bold text-red-500">Erro ao carregar perfil.</h1>
-          <p className="dark:text-white">Não foi possível conectar ao banco de dados ou o perfil (ID=1) não foi cadastrado.</p>
+      <div className="flex min-h-screen items-center justify-center">
+        <main className="w-full max-w-3xl p-8">
+          <h1 className="text-3xl text-red-500">Erro ao carregar perfil.</h1>
+          <p>Não foi possível conectar ao banco de dados ou o perfil (ID=1) não foi cadastrado.</p>
         </main>
       </div>
     )
@@ -127,186 +128,187 @@ export default async function Home() {
   const sign = profile.birthdate ? getZodiacSign(profile.birthdate) : null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black py-12">
-      <main className="w-full max-w-3xl p-8 bg-white dark:bg-zinc-900 shadow-xl rounded-xl">
+    <div className="max-w-6xl mx-auto p-8 md:p-12 lg:p-16">
+      <div className="lg:grid lg:grid-cols-3 lg:gap-16">
 
-        {/* --- SEÇÃO 1: PERFIL (CABEÇALHO) --- */}
-        {profile.photo_url && (
-          <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-indigo-600 dark:border-indigo-400 shadow-lg">
-            <Image
-              src={profile.photo_url} 
-              alt={`Foto de ${profile.name}`}
-              width={128} 
-              height={128} 
-              className="w-full h-full object-cover" 
-              priority 
-            />
-          </div>
-        )}
-        <div className="text-center"> 
-          <h1 className="text-4xl font-bold text-black dark:text-white">{profile.name}</h1>
-          <p className="text-xl text-indigo-600 dark:text-indigo-400 mb-6">{profile.title}</p>
+        {/* --- COLUNA DA ESQUERDA (STICKY) --- */}
+        <header className="lg:sticky lg:top-12 lg:h-screen lg:col-span-1 flex flex-col items-center lg:items-start text-center lg:text-left">
 
-          <ul className="text-sm text-gray-700 dark:text-zinc-300 space-y-2 mb-6">
-            {profile.location && <li><span>📍</span> {profile.location}</li>}
-            {profile.email && <li><Link href={`mailto:${profile.email}`} className="hover:underline"><span>✉️</span> {profile.email}</Link></li>}
-            {profile.phone && <li><Link href={`tel:${profile.phone}`} className="hover:underline"><span>📞</span> {profile.phone}</Link></li>}
+          {profile.photo_url && (
+            <div className="w-40 h-40 mb-6 rounded-full overflow-hidden border-4 border-[color:var(--acento-verde)] shadow-lg">
+              <Image
+                src={profile.photo_url} 
+                alt={`Foto de ${profile.name}`}
+                width={160} 
+                height={160} 
+                className="w-full h-full object-cover" 
+                priority 
+              />
+            </div>
+          )}
+
+          <h1 className="text-4xl text-[color:var(--acento-verde)]">
+            {profile.name}
+          </h1>
+          <p className="text-xl text-[color:var(--texto-secundario)] mt-2">
+            {profile.title}
+          </p>
+
+          <ul className="text-sm text-[color:var(--texto-secundario)] space-y-2 mt-8">
+            {profile.location && <li><i className="fa-solid fa-location-dot w-6 text-center text-[color:var(--acento-verde)]"></i> {profile.location}</li>}
+            {profile.email && <li><Link href={`mailto:${profile.email}`} className="hover:text-[color:var(--acento-laranja)]"><i className="fa-solid fa-envelope w-6 text-center text-[color:var(--acento-verde)]"></i> {profile.email}</Link></li>}
+            {profile.phone && <li><Link href={`tel:${profile.phone}`} className="hover:text-[color:var(--acento-laranja)]"><i className="fa-solid fa-phone w-6 text-center text-[color:var(--acento-verde)]"></i> {profile.phone}</Link></li>}
             {age && profile.marital_status && (
-              <li><span>👤</span> {age} anos, {sign}, {profile.marital_status}</li>
+              <li><i className="fa-solid fa-user w-6 text-center text-[color:var(--acento-verde)]"></i> {age} anos, {sign}, {profile.marital_status}</li>
             )}
           </ul>
 
-          <div className="flex space-x-4 mb-8 justify-center">
+          {/* --- MUDANÇA AQUI: LINKS SOCIAIS COM ÍCONES --- */}
+          <div className="flex space-x-6 mt-8 justify-center lg:justify-start">
             {profile.linkedin_url && (
               <Link href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" 
-                    className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
-                LinkedIn
+                    className="text-[color:var(--texto-secundario)] hover:text-[color:var(--acento-laranja)] text-3xl"
+                    aria-label="LinkedIn">
+                <i className="fab fa-linkedin"></i>
               </Link>
             )}
             {profile.github_url && (
               <Link href={profile.github_url} target="_blank" rel="noopener noreferrer" 
-                    className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
-                GitHub
+                    className="text-[color:var(--texto-secundario)] hover:text-[color:var(--acento-laranja)] text-3xl"
+                    aria-label="GitHub">
+                <i className="fab fa-github"></i>
               </Link>
             )}
             {profile.website_url && (
               <Link href={profile.website_url} target="_blank" rel="noopener noreferrer" 
-                    className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
-                Site Pessoal
+                    className="text-[color:var(--texto-secundario)] hover:text-[color:var(--acento-laranja)] text-3xl"
+                    aria-label="Site Pessoal">
+                <i className="fas fa-globe"></i>
               </Link>
             )}
           </div>
-        </div>
+          <hr className="w-full border-zinc-700 my-12 lg:hidden" />
+        </header>
 
-        {/* --- SEÇÃO 2: SOBRE MIM --- */}
-        {profile.personal_summary && (
-          <div className="mt-10">
-            <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
-              Sobre Mim
-            </h2>
-            <p className="text-gray-700 dark:text-zinc-300 whitespace-pre-line">{profile.personal_summary}</p>
-          </div>
-        )}
+        {/* --- COLUNA DA DIREITA (ROLÁVEL) --- */}
+        <main className="lg:col-span-2">
 
-        {/* --- SEÇÃO 3: OBJETIVOS PROFISSIONAIS --- */}
-        {profile.professional_objectives && (
-          <div className="mt-10">
-            <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
-              Objetivos Profissionais
-            </h2>
-            <p className="text-gray-700 dark:text-zinc-300 whitespace-pre-line">{profile.professional_objectives}</p>
-          </div>
-        )}
+          {/* --- 1. SOBRE MIM --- */}
+          {profile.personal_summary && (
+            <section className="mb-12">
+              <SectionTitle title="Sobre Mim" />
+              <p className="text-texto-principal whitespace-pre-line">{profile.personal_summary}</p>
+            </section>
+          )}
 
-        {/* --- SEÇÃO 4: FORMAÇÃO ACADÊMICA --- */}
-        <div className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
-            Formação Acadêmica
-          </h2>
-          <div className="space-y-6">
-            {education.map((edu) => (
-              <div key={edu.id} className="pl-4">
-                <h3 className="text-lg font-semibold text-black dark:text-white">{edu.course_name}</h3>
-                <p className="font-medium text-gray-800 dark:text-zinc-200">{edu.institution}</p>
-                <p className="text-sm text-gray-500 dark:text-zinc-400">
-                  {edu.level} · {edu.status}
+          {/* --- 2. OBJETIVOS PROFISSIONAIS --- */}
+          {profile.professional_objectives && (
+            <section className="mb-12">
+              <SectionTitle title="Objetivos Profissionais" />
+              <p className="text-texto-principal whitespace-pre-line">{profile.professional_objectives}</p>
+            </section>
+          )}
+
+          {/* --- 3. FORMAÇÃO ACADÊMICA --- */}
+          <section className="mb-12">
+            <SectionTitle title="Formação Acadêmica" />
+            <div className="space-y-6">
+              {education.map((edu) => (
+                <div key={edu.id} className="pl-4 border-l-2 border-[color:var(--acento-laranja)]">
+                  <h3 className="text-lg text-texto-principal">{edu.course_name}</h3>
+                  <p className="font-medium text-texto-secundario">{edu.institution}</p>
+                  <p className="text-sm text-texto-secundario opacity-80">
+                    {edu.level} · {edu.status}
+                  </p>
+                  <p className="text-sm text-texto-secundario opacity-80">
+                    {edu.start_date} - {edu.end_date || 'Atual'}
+                  </p>
+                  {edu.description && (
+                     <p className="mt-2 text-texto-principal text-sm">{edu.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* --- 4. IDIOMAS --- */}
+          <section className="mb-12">
+            <SectionTitle title="Idiomas" />
+            <div className="space-y-2 pl-4">
+              {languages.map((lang) => (
+                <p key={lang.id} className="text-texto-principal">
+                  <strong className="font-semibold text-texto-secundario">{lang.name}:</strong> {lang.level}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-zinc-400">
-                  {edu.start_date} - {edu.end_date || 'Atual'}
-                </p>
-                {edu.description && (
-                   <p className="mt-2 text-gray-700 dark:text-zinc-300 text-sm">{edu.description}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          </section>
 
-        {/* --- SEÇÃO 5: IDIOMAS --- */}
-        {/* (Agora será renderizado em ordem alfabética) */}
-        <div className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
-            Idiomas
-          </h2>
-          <div className="space-y-2 pl-4">
-            {languages.map((lang) => (
-              <p key={lang.id} className="text-gray-700 dark:text-zinc-300">
-                <strong className="font-semibold text-black dark:text-white">{lang.name}:</strong> {lang.level}
-              </p>
-            ))}
-          </div>
-        </div>
+          {/* --- 5. EXPERIÊNCIA PROFISSIONAL --- */}
+          <section className="mb-12">
+            <SectionTitle title="Experiência Profissional" />
+            <div className="space-y-6">
+              {experiences.map((exp) => (
+                <div key={exp.id} className="pl-4 border-l-2 border-[color:var(--acento-laranja)]">
+                  <h3 className="text-lg text-texto-principal">{exp.role}</h3>
+                  <p className="font-medium text-texto-secundario">{exp.company}</p>
+                  <p className="text-sm text-texto-secundario opacity-80">{exp.period} · {exp.location}</p>
+                  <p className="mt-2 text-texto-principal whitespace-pre-line">{exp.description}</p>
+                </div>
+              ))}
+            </div>
+          </section>
 
-        {/* --- SEÇÃO 6: EXPERIÊNCIA PROFISSIONAL --- */}
-        <div className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
-            Experiência Profissional
-          </h2>
-          <div className="space-y-6">
-            {experiences.map((exp) => (
-              <div key={exp.id} className="pl-4">
-                <h3 className="text-lg font-semibold text-black dark:text-white">{exp.role}</h3>
-                <p className="font-medium text-gray-800 dark:text-zinc-200">{exp.company}</p>
-                <p className="text-sm text-gray-500 dark:text-zinc-400">{exp.period} · {exp.location}</p>
-                <p className="mt-2 text-gray-700 dark:text-zinc-300 whitespace-pre-line">{exp.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+          {/* --- 6. HABILIDADES E COMPETÊNCIAS --- */}
+          <section className="mb-12">
+            <SectionTitle title="Habilidades e Competências" />
+            <div className="space-y-6">
+              {Object.keys(skillsByCategory).map((category) => (
+                <div key={category}>
+                  {/* Sub-título da Categoria em Laranja */}
+                  <h3 className="text-lg text-[color:var(--acento-laranja)] mb-2">
+                    {category}
+                  </h3>
+                  <ul className="list-disc list-inside space-y-1">
+                    {skillsByCategory[category].map((skill) => (
+                      <li key={skill.id} className="text-texto-principal">
+                        <strong className="font-semibold text-texto-secundario">{skill.name}:</strong> {skill.description}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
 
-        {/* --- SEÇÃO 7: HABILIDADES E COMPETÊNCIAS --- */}
-        <div className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
-            Habilidades e Competências
-          </h2>
-          <div className="space-y-6">
-            {Object.keys(skillsByCategory).map((category) => (
-              <div key={category}>
-                <h3 className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
-                  {category}
-                </h3>
-                <ul className="list-disc list-inside space-y-1">
-                  {skillsByCategory[category].map((skill) => (
-                    <li key={skill.id} className="text-gray-700 dark:text-zinc-300">
-                      <strong className="font-semibold text-black dark:text-white">{skill.name}:</strong> {skill.description}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
+          {/* --- 7. CURSOS E CERTIFICAÇÕES --- */}
+          <section className="mb-12">
+            <SectionTitle title="Cursos e Certificações" />
+            <div className="space-y-6">
+              {courses.map((course) => (
+                <div key={course.id} className="pl-4 border-l-2 border-[color:var(--acento-laranja)]">
+                  <h3 className="text-lg text-texto-principal">{course.name}</h3>
+                  <p className="font-medium text-texto-secundario">{course.institution}</p>
+                  <p className="text-sm text-texto-secundario opacity-80">
+                    {course.type} · {course.date} {course.workload ? `(${course.workload} horas)` : ''}
+                  </p>
+                  {course.skills_acquired && (
+                     <p className="mt-2 text-texto-principal text-sm">
+                      <strong>Competências:</strong> {course.skills_acquired}
+                     </p>
+                  )}
+                  {course.url && (
+                     <Link href={course.url} target="_blank" rel="noopener noreferrer" 
+                           className="text-sm font-medium text-[color:var(--acento-verde)] hover:underline">
+                       Ver Certificado &rarr;
+                     </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
 
-        {/* --- SEÇÃO 8: CURSOS E CERTIFICAÇÕES --- */}
-        <div className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-zinc-100">
-            Cursos e Certificações
-          </h2>
-          <div className="space-y-6">
-            {courses.map((course) => (
-              <div key={course.id} className="pl-4">
-                <h3 className="text-lg font-semibold text-black dark:text-white">{course.name}</h3>
-                <p className="font-medium text-gray-800 dark:text-zinc-200">{course.institution}</p>
-                <p className="text-sm text-gray-500 dark:text-zinc-400">
-                  {course.type} · {course.date} {course.workload ? `(${course.workload} horas)` : ''}
-                </p>
-                {course.skills_acquired && (
-                   <p className="mt-2 text-gray-700 dark:text-zinc-300 text-sm">
-                    <strong>Competências:</strong> {course.skills_acquired}
-                   </p>
-                )}
-                {course.url && (
-                   <Link href={course.url} target="_blank" rel="noopener noreferrer" 
-                         className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
-                     Ver Certificado &rarr;
-                   </Link>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

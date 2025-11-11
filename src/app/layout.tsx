@@ -1,10 +1,23 @@
-// src/app/layout.tsx (Versão Limpa)
+// src/app/layout.tsx (Corrigido com as tuas fontes e FontAwesome)
 
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css"; // Importa o teu globals.css original
+// 1. Importa as tuas fontes (Fredoka e Concert One)
+import { Fredoka, Concert_One } from "next/font/google";
+import "./globals.css"; 
 
-const inter = Inter({ subsets: ["latin"] }); // Isto pode estar diferente, mas não importa
+// 2. Configura as fontes como variáveis CSS
+const fredoka = Fredoka({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-fredoka', // Apelido da fonte
+});
+
+const concertOne = Concert_One({
+  weight: ['400'], // Único peso disponível
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-concert-one', // Apelido da fonte
+});
 
 export const metadata: Metadata = {
   title: "André Ventura - Currículo",
@@ -17,10 +30,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // Removemos o 'className="dark"' e o 'bg-fundo-dark'
-    // Deixamos o teu globals.css tomar conta
-    <html lang="pt-BR">
-      <body className={inter.className}>
+    <html lang="pt-BR" className="dark">
+
+      {/* 3. Adicionamos o <head> para incluir o FontAwesome */}
+      <head>
+         <link 
+          rel="stylesheet" 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" 
+          integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" 
+          crossOrigin="anonymous" 
+          referrerPolicy="no-referrer" />
+      </head>
+
+      {/* 4. Aplica as variáveis das tuas fontes ao body */}
+      <body 
+        className={`${fredoka.variable} ${concertOne.variable} bg-fundo-dark text-texto-principal antialiased`}
+      >
         {children}
       </body>
     </html>
