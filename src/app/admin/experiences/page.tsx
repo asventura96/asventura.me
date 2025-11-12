@@ -1,5 +1,6 @@
 // src/app/admin/experiences/page.tsx
 import { prisma } from '@/lib/prismaClient'
+import { experiences } from '@prisma/client'
 import Link from 'next/link'
 import { deleteExperience } from '@/app/admin/experiences/actions' 
 import DeleteButton from '@/components/DeleteButton' 
@@ -43,7 +44,7 @@ export default async function AdminExperiencesPage() {
         {experiences.length === 0 ? (
           <p className="text-zinc-400">Nenhuma experiência cadastrada.</p>
         ) : (
-          experiences.map((exp) => (
+          experiences.map((exp: experiences) => (
             <div 
               key={exp.id} 
               className="flex justify-between items-center p-4 border border-zinc-700 rounded-lg"
