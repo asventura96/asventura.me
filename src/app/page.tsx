@@ -1,4 +1,23 @@
-// src/app/page.tsx (Corrigido com Títulos Verdes e Ícones)
+// src/app/page.tsx
+
+
+// === Tipos usados na página ===
+type SkillId = string | number;
+
+interface Skill {
+  id: SkillId;
+  name: string;
+  description: string;
+  category?: string | null;
+}
+
+//
+// AQUI ESTÁ A CORREÇÃO:
+//
+type SkillsByCategory = Record<string, Skill[]>;
+//
+//
+// ==============================
 
 import { prisma } from '@/lib/prismaClient';
 import Link from 'next/link';
@@ -35,15 +54,13 @@ function getZodiacSign(birthDate: Date): string {
   return "---";
 }
 
-function groupSkillsByCategory(skills: any[]) {
-  return skills.reduce((acc, skill) => {
-    const category = skill.category || 'Outras';
-    if (!acc[category]) {
-      acc[category] = [];
-    }
+function groupSkillsByCategory(skills: Skill[]): SkillsByCategory {
+  return skills.reduce<SkillsByCategory>((acc, skill) => {
+    const category = (skill.category ?? 'Outras').trim();
+    if (!acc[category]) acc[category] = [];
     acc[category].push(skill);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {});
 }
 
 function sortEntriesByDate(entries: any[], dateField: string) {
@@ -262,16 +279,19 @@ export default async function Home() {
           <section className="mb-12">
             <SectionTitle title="Habilidades e Competências" />
             <div className="space-y-6">
-              {Object.keys(skillsByCategory).map((category) => (
+              {Object.entries(skillsByCategory).map(([category, list]) => (
                 <div key={category}>
                   {/* Sub-título da Categoria em Laranja */}
                   <h3 className="text-lg text-[color:var(--acento-laranja)] mb-2">
                     {category}
                   </h3>
                   <ul className="list-disc list-inside space-y-1">
-                    {skillsByCategory[category].map((skill) => (
+                    {list.map((skill: Skill) => (
                       <li key={skill.id} className="text-texto-principal">
-                        <strong className="font-semibold text-texto-secundario">{skill.name}:</strong> {skill.description}
+                        <strong className="font-semibold text-texto-secundario">
+                          {skill.name}:
+                        </strong>{" "}
+                        {skill.description}
                       </li>
                     ))}
                   </ul>
