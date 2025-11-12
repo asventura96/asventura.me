@@ -1,8 +1,7 @@
 // src/app/admin/languages/edit/[id]/page.tsx
-import { prisma } from '@/lib/prismaClient'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-
+import { prisma } from '@/lib/prismaClient'
 import { updateLanguage } from '@/app/admin/languages/actions'
 import LanguageForm from '@/components/LanguageForm'
 
@@ -18,7 +17,7 @@ async function getLanguageById(id: string) {
 }
 
 export default async function EditLanguagePage({ params }: { params: Promise<{ id: string }> }) {
-
+  
   const { id } = await params;
   const language = await getLanguageById(id)
 
@@ -27,25 +26,22 @@ export default async function EditLanguagePage({ params }: { params: Promise<{ i
   }
 
   return (
-    <div className="flex min-h-screen justify-center bg-zinc-100 dark:bg-zinc-900">
-      <main className="w-full max-w-2xl p-8 my-12 bg-white dark:bg-black shadow-xl rounded-xl">
+    <div className="w-full max-w-3xl mx-auto bg-white rounded-xl shadow-2xl">
+      
+      <div className="bg-white rounded-t-xl p-4 flex justify-between items-center border-b border-zinc-300">
+        <h1 className="text-xl font-bold text-[color:var(--acento-verde)]">EDITAR IDIOMA</h1>
+        <Link href="/admin/languages" className="text-sm hover:underline text-[color:var(--acento-verde)]">
+          &larr; CANCELAR
+        </Link>
+      </div>
 
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-black dark:text-white">
-            Editar Idioma
-          </h1>
-          <Link href="/admin/languages" className="text-sm text-indigo-600 hover:text-indigo-500">
-            &larr; Cancelar
-          </Link>
-        </div>
-
-        <LanguageForm
+      <div className="p-8">
+        <LanguageForm 
           action={updateLanguage}
           initialData={language}
-          buttonText="Salvar Alterações"
+          buttonText="SALVAR ALTERAÇÕES"
         />
-
-      </main>
+      </div>
     </div>
   )
 }

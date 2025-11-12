@@ -3,28 +3,20 @@
 
 import { useTransition, useState } from 'react'
 
-/**
- * Define o tipo de retorno esperado da Server Action (para o Zod).
- */
+// --- Tipos de Código Limpo ---
 type FormActionResult = {
   success: boolean;
   message?: string;
-} | void; // 'void' para ações que redirecionam
+} | void; 
 
-/**
- * Define o tipo da Server Action que o formulário vai chamar.
- */
-type FormAction = (formData: FormData) => Promise<FormActionResult>;
+type FormAction = (formData: FormData) => Promise<FormActionResult>; 
 
-/**
- * Props para o formulário genérico de Idioma.
- */
 type LanguageFormProps = {
   action: FormAction;
   initialData?: {
     id?: number;
-    name: string;
-    level: string;
+    name: string | null;
+    level: string | null;
   };
   buttonText: string;
 };
@@ -34,7 +26,7 @@ export default function LanguageForm({ action, initialData, buttonText }: Langua
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
-  const inputStyle = "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md shadow-sm dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500";
+  const inputStyle = "mt-1 block w-full px-3 py-2 border border-zinc-400 rounded-sm shadow-sm bg-white text-black focus:outline-none focus:ring-[color:var(--acento-verde)] focus:border-[color:var(--acento-verde)]";
 
   const handleSubmit = (formData: FormData) => {
     setMessage(null);
@@ -48,8 +40,8 @@ export default function LanguageForm({ action, initialData, buttonText }: Langua
         } else if (result && result.message) {
           setMessage({ text: result.message, type: 'success' });
         }
-      } catch (e) { // 'error' foi substituído por 'e' e agora é usado
-        console.error(e); // Loga o erro real no console
+      } catch (e) {
+        console.error(e);
         setMessage({ text: "Erro ao salvar. Tente novamente.", type: 'error' });
       }
     });
@@ -63,7 +55,7 @@ export default function LanguageForm({ action, initialData, buttonText }: Langua
       )}
 
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+        <label htmlFor="name" className="block text-sm font-medium text-zinc-800">
           Idioma (Ex: Inglês)
         </label>
         <input
@@ -77,7 +69,7 @@ export default function LanguageForm({ action, initialData, buttonText }: Langua
       </div>
 
       <div>
-        <label htmlFor="level" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+        <label htmlFor="level" className="block text-sm font-medium text-zinc-800">
           Nível (Obrigatório)
         </label>
         <select
@@ -100,7 +92,7 @@ export default function LanguageForm({ action, initialData, buttonText }: Langua
         <button
           type="submit"
           disabled={isPending}
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+          className="w-full flex justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white bg-[color:var(--acento-laranja)] hover:opacity-90"
         >
           {isPending ? 'Salvando...' : buttonText}
         </button>
