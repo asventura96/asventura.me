@@ -2,19 +2,34 @@
 'use client' 
 
 import { useTransition, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { IMaskInput } from 'react-imask' 
+import IMask from 'imask' 
 
-type FormAction = (formData: FormData) => Promise<any>;
+type FormActionResult = {
+  success: boolean;
+  message?: string;
+} | void; 
+
+type FormAction = (formData: FormData) => Promise<FormActionResult>; 
+
+const dateMask = {
+  mask: 'MM/YYYY',
+  blocks: {
+    MM: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2, placeholderChar: 'm' },
+    YYYY: { mask: IMask.MaskedRange, from: 1980, to: 2050, maxLength: 4, placeholderChar: 'a' }
+  },
+  placeholderChar: '_',
+};
+
 type CourseFormProps = {
   action: FormAction;
   initialData?: {
     id?: number;
-    name: string;
-    type: string;
-    institution: string;
-    date: string;
-    workload: number | null; // <-- MUDANÇA AQUI (de string para number)
+    name: string | null;
+    type: string | null;
+    institution: string | null;
+    date: string | null;
+    workload: number | null;
     skills_acquired: string | null;
     url: string | null;
     notes: string | null;
@@ -24,34 +39,25 @@ type CourseFormProps = {
 
 export default function CourseForm({ action, initialData, buttonText }: CourseFormProps) {
 
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
-  const inputStyle = "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md shadow-sm dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500";
-
-  const dateMask = {
-    mask: 'MM/YYYY',
-    blocks: {
-      MM: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2, placeholderChar: 'm' },
-      YYYY: { mask: IMask.MaskedRange, from: 1980, to: 2050, maxLength: 4, placeholderChar: 'a' }
-    },
-    placeholderChar: '_',
-  };
+  const inputStyle = "mt-1 block w-full px-3 py-2 border border-zinc-400 rounded-sm shadow-sm bg-white text-black focus:outline-none focus:ring-[color:var(--acento-verde)] focus:border-[color:var(--acento-verde)]";
 
   const handleSubmit = (formData: FormData) => {
     setMessage(null);
+
     startTransition(async () => {
       try {
         const result = await action(formData);
+
         if (result && result.success === false) {
           setMessage({ text: result.message || "Erro desconhecido.", type: 'error' });
-        } else {
-          if (result && result.message) {
-             setMessage({ text: result.message, type: 'success' });
-          }
+        } else if (result && result.message) {
+          setMessage({ text: result.message, type: 'success' });
         }
-      } catch (error) {
+      } catch (e) {
+        console.error(e);
         setMessage({ text: "Erro ao salvar. Tente novamente.", type: 'error' });
       }
     });
@@ -64,10 +70,9 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
         <input type="hidden" name="id" value={initialData.id} />
       )}
 
-      {/* --- Linha 1: Nome e Tipo --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+          <label htmlFor="name" className="block text-sm font-medium text-zinc-800">
             Nome do Curso/Certificação
           </label>
           <input
@@ -80,10 +85,16 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
           />
         </div>
         <div>
-          <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+          <label htmlFor="type" className="block text-sm font-medium text-zinc-800">
             Tipo (Obrigatório)
           </label>
-          <select id="type" name="type" required className={inputStyle} defaultValue={initialData?.type || ''}>
+          <select
+            id="type"
+            name="type"
+            required
+            className={inputStyle}
+            defaultValue={initialData?.type || ''}
+          >
             <option value="">Selecione o tipo</option>
             <option value="Curso">Curso</option>
             <option value="Certificação">Certificação</option>
@@ -93,10 +104,9 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
         </div>
       </div>
 
-      {/* --- Linha 2: Instituição, Data e Carga-Horária (ATUALIZADA) --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label htmlFor="institution" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+          <label htmlFor="institution" className="block text-sm font-medium text-zinc-800">
             Instituição Emitente
           </label>
           <input
@@ -109,7 +119,7 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
           />
         </div>
         <div>
-          <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+          <label htmlFor="date" className="block text-sm font-medium text-zinc-800">
             Data Conclusão (mm/aaaa)
           </label>
           <IMaskInput
@@ -123,28 +133,24 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
             placeholder="05/2024"
           />
         </div>
-        {/* --- MUDANÇA AQUI --- */}
         <div>
-          <label htmlFor="workload" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+          <label htmlFor="workload" className="block text-sm font-medium text-zinc-800">
             Carga Horária (em horas)
           </label>
           <input
             id="workload"
             name="workload"
-            type="number" // <-- MUDANÇA
+            type="number"
             min="0"
             className={inputStyle}
             defaultValue={initialData?.workload || ''}
-            placeholder="Ex: 40" // <-- MUDANÇA
+            placeholder="Ex: 40"
           />
         </div>
       </div>
 
-      {/* ... (Resto do formulário: URL, Skills, Notas, Botão - sem mudanças) ... */}
-
-      {/* --- Linha 3: URL do Certificado --- */}
       <div>
-        <label htmlFor="url" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+        <label htmlFor="url" className="block text-sm font-medium text-zinc-800">
           URL do Certificado (Opcional)
         </label>
         <input
@@ -157,9 +163,8 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
         />
       </div>
 
-      {/* --- Linha 4: Competências Adquiridas --- */}
       <div>
-        <label htmlFor="skills_acquired" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+        <label htmlFor="skills_acquired" className="block text-sm font-medium text-zinc-800">
           Competências Adquiridas (Skills)
         </label>
         <textarea
@@ -172,9 +177,8 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
         />
       </div>
 
-      {/* --- Linha 5: Observações --- */}
       <div>
-        <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+        <label htmlFor="notes" className="block text-sm font-medium text-zinc-800">
           Observações (Opcional)
         </label>
         <textarea
@@ -187,12 +191,11 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
         />
       </div>
 
-      {/* --- Botão Salvar --- */}
       <div>
         <button
           type="submit"
           disabled={isPending}
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+          className="w-full flex justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white bg-[color:var(--acento-laranja)] hover:opacity-90"
         >
           {isPending ? 'Salvando...' : buttonText}
         </button>
