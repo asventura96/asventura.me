@@ -1,7 +1,11 @@
 // src/app/page.tsx
 
+import { prisma } from '@/lib/prismaClient';
+import Link from 'next/link';
+import Image from 'next/image';
 
-// === Tipos usados na página ===
+// === Tipos Globais da Página ===
+
 type SkillId = string | number;
 
 interface Skill {
@@ -11,19 +15,10 @@ interface Skill {
   category?: string | null;
 }
 
-//
-// AQUI ESTÁ A CORREÇÃO:
-//
 type SkillsByCategory = Record<string, Skill[]>;
-//
-//
-// ==============================
 
-import { prisma } from '@/lib/prismaClient';
-import Link from 'next/link';
-import Image from 'next/image'; 
+// === Funções Auxiliares ===
 
-// --- 1. FUNÇÕES AUXILIARES (Sem mudanças) ---
 function getAge(birthDate: Date): number | null {
   if (!birthDate) return null;
   const today = new Date();
@@ -37,7 +32,7 @@ function getAge(birthDate: Date): number | null {
 
 function getZodiacSign(birthDate: Date): string {
   if (!birthDate) return "---";
-  const day = birthDate.getDate() + 1; 
+  const day = birthDate.getDate() + 1;
   const month = birthDate.getMonth() + 1;
   if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return "♒ Aquário";
   if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) return "♓ Peixes";
@@ -63,35 +58,57 @@ function groupSkillsByCategory(skills: Skill[]): SkillsByCategory {
   }, {});
 }
 
-function sortEntriesByDate(entries: any[], dateField: string) {
-  const toSortableNumber = (dateString: string): number => {
-    if (!dateString || !dateString.includes('/')) { return 0; }
-    const parts = dateString.split('/');
+/**
+ * Ordena um array de objetos (de forma imutável) por um campo de data "MM/YYYY".
+ * Usa um tipo genérico <T> para ser type-safe e evitar 'any'.
+ */
+function sortEntriesByDate<T>(entries: T[], dateField: keyof T) {
+  /** Converte "MM/YYYY" para um número (ex: 202512) para ordenação */
+  const toSortableNumber = (dateValue: unknown): number => {
+    // Validação robusta para o valor, garantindo que é uma string
+    if (typeof dateValue !== 'string' || !dateValue || !dateValue.includes('/')) {
+      return 0;
+    }
+    const parts = dateValue.split('/');
     if (parts.length !== 2) return 0;
     const month = parseInt(parts[0], 10);
     const year = parseInt(parts[1], 10);
     if (isNaN(month) || isNaN(year)) return 0;
+    // Formato YYYYMM para ordenação correta
     return year * 100 + month;
   };
-  return entries.sort((a, b) => {
+
+  // Retorna um NOVO array ordenado (imutabilidade)
+  return [...entries].sort((a, b) => {
     const dateA = toSortableNumber(a[dateField]);
     const dateB = toSortableNumber(b[dateField]);
-    return dateB - dateA; 
+    // Ordena do mais recente (maior número) para o mais antigo (menor número)
+    return dateB - dateA;
   });
 }
 
-// --- 2. FUNÇÃO DE BUSCA DE DADOS (Sem mudanças) ---
+// === Busca de Dados ===
+
 async function getData() {
   try {
-    const profile = await prisma.profile.findFirst({ where: { id: 1 } });
-    const skills = await prisma.skills.findMany({ orderBy: { category: 'asc' } });
-    const experiences = await prisma.experiences.findMany();
-    const education = await prisma.education.findMany();
-    const courses = await prisma.course.findMany();
-    const languages = await prisma.language.findMany({
-      orderBy: { name: 'asc' } 
-    }); 
+    // Executa todas as queries em paralelo para melhor performance
+    const [
+      profile,
+      skills,
+      experiences,
+      education,
+      courses,
+      languages
+    ] = await Promise.all([
+      prisma.profile.findFirst({ where: { id: 1 } }),
+      prisma.skills.findMany({ orderBy: { category: 'asc' } }),
+      prisma.experiences.findMany(),
+      prisma.education.findMany(),
+      prisma.course.findMany(),
+      prisma.language.findMany({ orderBy: { name: 'asc' } })
+    ]);
 
+    // Ordena os resultados *depois* que todos foram buscados
     const sortedExperiences = sortEntriesByDate(experiences || [], 'start_date');
     const sortedEducation = sortEntriesByDate(education || [], 'start_date');
     const sortedCourses = sortEntriesByDate(courses || [], 'date');
@@ -107,29 +124,34 @@ async function getData() {
 
   } catch (error) {
     console.error("Erro ao buscar dados do banco:", error);
+    // Retorna um estado vazio em caso de falha
     return {
       profile: null, skills: [], experiences: [], education: [], courses: [], languages: []
     };
   }
 }
 
-// --- FUNÇÃO AUXILIAR PARA TÍTULOS DE SEÇÃO (CORRIGIDA) ---
-function SectionTitle({ title }: { title: string }) {
+// === Componentes Auxiliares ===
+
+interface SectionTitleProps {
+  title: string;
+}
+
+function SectionTitle({ title }: SectionTitleProps) {
   return (
-    // --- MUDANÇA AQUI: Trocamos o laranja pelo VERDE ---
     <h2 className="text-2xl mb-6 uppercase tracking-widest text-[color:var(--acento-verde)] border-b-2 border-[color:var(--acento-verde)] pb-2">
       {title}
     </h2>
   )
 }
 
-// --- 3. O COMPONENTE (PÁGINA PÚBLICA) ---
+// === Componente Principal (Página) ===
+
 export default async function Home() {
 
   const { profile, skills, experiences, education, courses, languages } = await getData();
 
   if (!profile) {
-    // ... (código de erro - sem mudanças)
     return (
       <div className="flex min-h-screen items-center justify-center">
         <main className="w-full max-w-3xl p-8">
@@ -140,6 +162,7 @@ export default async function Home() {
     )
   }
 
+  // Processamento de dados para exibição
   const skillsByCategory = groupSkillsByCategory(skills);
   const age = profile.birthdate ? getAge(profile.birthdate) : null;
   const sign = profile.birthdate ? getZodiacSign(profile.birthdate) : null;
@@ -154,12 +177,12 @@ export default async function Home() {
           {profile.photo_url && (
             <div className="w-40 h-40 mb-6 rounded-full overflow-hidden border-4 border-[color:var(--acento-verde)] shadow-lg mx-auto">
               <Image
-                src={profile.photo_url} 
+                src={profile.photo_url}
                 alt={`Foto de ${profile.name}`}
-                width={160} 
-                height={160} 
-                className="w-full h-full object-cover" 
-                priority 
+                width={160}
+                height={160}
+                className="w-full h-full object-cover"
+                priority // Bom para LCP (Largest Contentful Paint)
               />
             </div>
           )}
@@ -180,19 +203,19 @@ export default async function Home() {
             )}
           </ul>
 
-          {/* --- MUDANÇA AQUI: LINKS SOCIAIS COM ÍCONES --- */}
+          {/* Links Sociais */}
           <div className="flex space-x-6 mt-8 justify-center lg:justify-start">
             {profile.linkedin_url && (
-              <Link href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" 
-                    className="text-[color:var(--acento-verde)] hover:text-[color:var(--acento-laranja)] text-3xl"
-                    aria-label="LinkedIn">
+              <Link href={profile.linkedin_url} target="_blank" rel="noopener noreferrer"
+                className="text-[color:var(--acento-verde)] hover:text-[color:var(--acento-laranja)] text-3xl"
+                aria-label="LinkedIn">
                 <i className="fab fa-linkedin"></i>
               </Link>
             )}
             {profile.github_url && (
-              <Link href={profile.github_url} target="_blank" rel="noopener noreferrer" 
-                    className="text-[color:var(--acento-verde)] hover:text-[color:var(--acento-laranja)] text-3xl"
-                    aria-label="GitHub">
+              <Link href={profile.github_url} target="_blank" rel="noopener noreferrer"
+                className="text-[color:var(--acento-verde)] hover:text-[color:var(--acento-laranja)] text-3xl"
+                aria-label="GitHub">
                 <i className="fab fa-github"></i>
               </Link>
             )}
@@ -203,7 +226,7 @@ export default async function Home() {
         {/* --- COLUNA DA DIREITA (ROLÁVEL) --- */}
         <main className="lg:col-span-2">
 
-          {/* --- 1. SOBRE MIM --- */}
+          {/* 1. SOBRE MIM */}
           {profile.personal_summary && (
             <section className="mb-12">
               <SectionTitle title="Sobre Mim" />
@@ -211,7 +234,7 @@ export default async function Home() {
             </section>
           )}
 
-          {/* --- 2. OBJETIVOS PROFISSIONAIS --- */}
+          {/* 2. OBJETIVOS PROFISSIONAIS */}
           {profile.professional_objectives && (
             <section className="mb-12">
               <SectionTitle title="Objetivos Profissionais" />
@@ -219,7 +242,7 @@ export default async function Home() {
             </section>
           )}
 
-          {/* --- 3. FORMAÇÃO ACADÊMICA --- */}
+          {/* 3. FORMAÇÃO ACADÊMICA */}
           <section className="mb-12">
             <SectionTitle title="Formação Acadêmica" />
             <div className="space-y-6">
@@ -234,14 +257,14 @@ export default async function Home() {
                     {edu.start_date} - {edu.end_date || 'Atual'}
                   </p>
                   {edu.description && (
-                     <p className="mt-2 text-texto-principal text-sm">{edu.description}</p>
+                    <p className="mt-2 text-texto-principal text-sm">{edu.description}</p>
                   )}
                 </div>
               ))}
             </div>
           </section>
 
-          {/* --- 4. IDIOMAS --- */}
+          {/* 4. IDIOMAS */}
           <section className="mb-12">
             <SectionTitle title="Idiomas" />
             <div className="space-y-2 pl-4">
@@ -253,7 +276,7 @@ export default async function Home() {
             </div>
           </section>
 
-          {/* --- 5. EXPERIÊNCIA PROFISSIONAL --- */}
+          {/* 5. EXPERIÊNCIA PROFISSIONAL */}
           <section className="mb-12">
             <SectionTitle title="Experiência Profissional" />
             <div className="space-y-6">
@@ -268,18 +291,17 @@ export default async function Home() {
             </div>
           </section>
 
-          {/* --- 6. HABILIDADES E COMPETÊNCIAS --- */}
+          {/* 6. HABILIDADES E COMPETÊNCIAS */}
           <section className="mb-12">
             <SectionTitle title="Habilidades e Competências" />
             <div className="space-y-6">
               {Object.entries(skillsByCategory).map(([category, list]) => (
                 <div key={category}>
-                  {/* Sub-título da Categoria em Laranja */}
                   <h3 className="text-lg text-[color:var(--acento-laranja)] mb-2">
                     {category}
                   </h3>
                   <ul className="list-disc list-inside space-y-1">
-                    {list.map((skill: Skill) => (
+                    {list.map((skill) => (
                       <li key={skill.id} className="text-texto-principal">
                         <strong className="font-semibold text-texto-secundario">
                           {skill.name}:
@@ -293,7 +315,7 @@ export default async function Home() {
             </div>
           </section>
 
-          {/* --- 7. CURSOS E CERTIFICAÇÕES --- */}
+          {/* 7. CURSOS E CERTIFICAÇÕES */}
           <section className="mb-12">
             <SectionTitle title="Cursos e Certificações" />
             <div className="space-y-6">
@@ -305,15 +327,15 @@ export default async function Home() {
                     {course.type} · {course.date} {course.workload ? `(${course.workload} horas)` : ''}
                   </p>
                   {course.skills_acquired && (
-                     <p className="mt-2 text-texto-principal text-sm">
+                    <p className="mt-2 text-texto-principal text-sm">
                       <strong>Competências:</strong> {course.skills_acquired}
-                     </p>
+                    </p>
                   )}
                   {course.url && (
-                     <Link href={course.url} target="_blank" rel="noopener noreferrer" 
-                           className="text-sm font-medium text-[color:var(--acento-verde)] hover:underline">
-                       Ver Certificado &rarr;
-                     </Link>
+                    <Link href={course.url} target="_blank" rel="noopener noreferrer"
+                      className="text-sm font-medium text-[color:var(--acento-verde)] hover:underline">
+                      Ver Certificado &rarr;
+                    </Link>
                   )}
                 </div>
               ))}
