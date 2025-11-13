@@ -3,7 +3,9 @@
 import type { Metadata } from "next";
 // 1. Importa as tuas fontes (Fredoka e Concert One)
 import { Fredoka, Concert_One } from "next/font/google";
-import "./globals.css"; 
+import "./globals.css";
+
+import { Analytics } from '@vercel/analytics/next';
 
 // 2. Configura as fontes como variáveis CSS
 const fredoka = Fredoka({
@@ -47,6 +49,7 @@ export default function RootLayout({
         className={`${fredoka.variable} ${concertOne.variable} bg-fundo-dark text-texto-principal antialiased`}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );
