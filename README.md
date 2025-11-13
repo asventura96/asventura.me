@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# asventura.me - Portfólio Pessoal e Currículo Dinâmico
 
-## Getting Started
+Este é o repositório oficial do meu site pessoal e portfólio profissional, [asventura.me](https://asventura.me/).
 
-First, run the development server:
+O projeto foi desenvolvido para ser um currículo online dinâmico, apresentando minhas habilidades, experiências profissionais e formação acadêmica, com um painel administrativo próprio para gerenciamento de conteúdo.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+[![Deploy com Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fasventura96%2Fasventura.me)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🖥️ Acesso
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Você pode acessar o site em produção no link: **[https://asventura.me/](https://asventura.me/)**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Funcionalidades
 
-## Learn More
+* **Exibição de Currículo:** Apresentação clara do perfil profissional, experiências, formação, cursos, idiomas e habilidades (skills).
+* **Painel Administrativo:** Uma área privada (`/admin`) para gerenciar todo o conteúdo do site.
+* **Autenticação:** O painel é protegido usando **NextAuth.js**, garantindo que apenas o administrador possa modificar o conteúdo.
+* **Operações CRUD:** O painel permite criar, ler, editar e excluir (CRUD) registros de todas as seções do currículo.
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ Tecnologias Utilizadas
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Este projeto foi construído utilizando as seguintes tecnologias:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* **Framework:** [Next.js](https://nextjs.org/) (com App Router)
+* **Linguagem:** [TypeScript](https://www.typescriptlang.org/)
+* **Banco de Dados:** [MySQL](https://www.mysql.com/)
+* **ORM:** [Prisma](https://www.prisma.io/)
+* **Autenticação:** [NextAuth.js](https://next-auth.js.org/)
+* **Hospedagem:** [Vercel](https://vercel.com/)
+* **(Opcional: Adicione a de Estilização)** Ex: [Tailwind CSS](https://tailwindcss.com/) / [Styled-components](https://styled-components.com/)
 
-## Deploy on Vercel
+## 🏁 Rodando Localmente
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Siga os passos abaixo para executar o projeto em seu ambiente local.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1.  **Clone o repositório:**
+    ```bash
+    git clone [https://github.com/asventura96/asventura.me.git](https://github.com/asventura96/asventura.me.git)
+    cd asventura.me
+    ```
+
+2.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
+
+3.  **Configure as Variáveis de Ambiente:**
+    Crie um arquivo `.env` na raiz do projeto. Você precisará, no mínimo, das seguintes variáveis (baseado no `schema.prisma` e `middleware.ts`):
+
+    ```ini
+    # URL de conexão do seu banco MySQL
+    DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE"
+
+    # Secrets para o NextAuth.js
+    # Gere um secret em: [https://generate-secret.vercel.app/](https://generate-secret.vercel.app/)
+    NEXTAUTH_SECRET="SEU_SECRET_AQUI"
+    NEXTAUTH_URL="http://localhost:3000"
+    ```
+
+4.  **Configure o Banco de Dados:**
+    Execute o Prisma para sincronizar seu schema com o banco de dados:
+    ```bash
+    npx prisma db push
+    ```
+
+5.  **Execute o Seed (Opcional):**
+    Para popular o banco com dados iniciais (como o usuário admin), execute o script de seed:
+    ```bash
+    npx prisma db seed
+    ```
+
+6.  **Inicie o servidor de desenvolvimento:**
+    ```bash
+    npm run dev
+    ```
+
+7.  Abra [http://localhost:3000](http://localhost:3000) em seu navegador.
+
+## 📄 Licença
+
+Este projeto é distribuído sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
