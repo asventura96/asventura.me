@@ -4,11 +4,14 @@
 
 :root {
   /* 1. Variáveis da paleta (sem mudanças) */
+  --branco: #FFFFFF;
+  --preto: #000000;
   --background: #023047;      
   --foreground: #D4F0FC;     
   --acento-verde: #2ECC40;
-  --acento-laranja: #FF8D37;   
-  --texto-secundario: #89D6FB; 
+  --acento-laranja: #FF8D37;
+  --acento-roxo: #5D3Fd3;
+  --texto-secundario: #89D6FB;
 }
 
 /* 2. Removemos o @theme inline, pois o Tailwind vai
@@ -16,7 +19,7 @@
 
 body {
   background: var(--background);
-  color: var(--foreground);
+  color: var(--branco);
 
   /* 3. APLICA AS TUAS FONTES
      - Usa Fredoka como padrão

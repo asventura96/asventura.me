@@ -39,18 +39,18 @@ function getZodiacSign(birthDate: Date): string {
   if (!birthDate) return "---";
   const day = birthDate.getDate() + 1; 
   const month = birthDate.getMonth() + 1;
-  if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return "Aquário ♒";
-  if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) return "Peixes ♓";
-  if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "Áries ♈";
-  if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return "Touro ♉";
-  if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return "Gêmeos ♊";
-  if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return "Câncer ♋";
-  if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return "Leão ♌";
-  if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return "Virgem ♍";
-  if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return "Libra ♎";
-  if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return "Escorpião ♏";
-  if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return "Sagitário ♐";
-  if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return "Capricórnio ♑";
+  if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return "♒ Aquário";
+  if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) return "♓ Peixes";
+  if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "♈ Áries";
+  if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return "♉ Touro";
+  if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return "♊ Gêmeos";
+  if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return "♋ Câncer";
+  if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return "♌ Leão";
+  if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return "♍ Virgem";
+  if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return "♎ Libra";
+  if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return "♏ Escorpião";
+  if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return "♐ Sagitário";
+  if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return "♑ Capricórnio";
   return "---";
 }
 
@@ -152,7 +152,7 @@ export default async function Home() {
         <header className="lg:sticky lg:top-12 lg:h-screen lg:col-span-1 flex flex-col items-center lg:items-start text-center lg:text-left">
 
           {profile.photo_url && (
-            <div className="w-40 h-40 mb-6 rounded-full overflow-hidden border-4 border-[color:var(--acento-verde)] shadow-lg">
+            <div className="w-40 h-40 mb-6 rounded-full overflow-hidden border-4 border-[color:var(--acento-verde)] shadow-lg mx-auto">
               <Image
                 src={profile.photo_url} 
                 alt={`Foto de ${profile.name}`}
@@ -164,14 +164,14 @@ export default async function Home() {
             </div>
           )}
 
-          <h1 className="text-4xl text-[color:var(--acento-verde)]">
+          <h1 className="uppercase text-center text-4xl text-[color:var(--acento-verde)]">
             {profile.name}
           </h1>
-          <p className="text-xl text-[color:var(--texto-secundario)] mt-2">
+          <p className="text-center text-base text-[color:var(--texto-secundario)] mt-2">
             {profile.title}
           </p>
 
-          <ul className="text-sm text-[color:var(--texto-secundario)] space-y-2 mt-8">
+          <ul className="text-sm text-[color:var(--branco)] space-y-2 mt-8">
             {profile.location && <li><i className="fa-solid fa-location-dot w-6 text-center text-[color:var(--acento-verde)]"></i> {profile.location}</li>}
             {profile.email && <li><Link href={`mailto:${profile.email}`} className="hover:text-[color:var(--acento-laranja)]"><i className="fa-solid fa-envelope w-6 text-center text-[color:var(--acento-verde)]"></i> {profile.email}</Link></li>}
             {profile.phone && <li><Link href={`tel:${profile.phone}`} className="hover:text-[color:var(--acento-laranja)]"><i className="fa-solid fa-phone w-6 text-center text-[color:var(--acento-verde)]"></i> {profile.phone}</Link></li>}
@@ -184,23 +184,16 @@ export default async function Home() {
           <div className="flex space-x-6 mt-8 justify-center lg:justify-start">
             {profile.linkedin_url && (
               <Link href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" 
-                    className="text-[color:var(--texto-secundario)] hover:text-[color:var(--acento-laranja)] text-3xl"
+                    className="text-[color:var(--acento-verde)] hover:text-[color:var(--acento-laranja)] text-3xl"
                     aria-label="LinkedIn">
                 <i className="fab fa-linkedin"></i>
               </Link>
             )}
             {profile.github_url && (
               <Link href={profile.github_url} target="_blank" rel="noopener noreferrer" 
-                    className="text-[color:var(--texto-secundario)] hover:text-[color:var(--acento-laranja)] text-3xl"
+                    className="text-[color:var(--acento-verde)] hover:text-[color:var(--acento-laranja)] text-3xl"
                     aria-label="GitHub">
                 <i className="fab fa-github"></i>
-              </Link>
-            )}
-            {profile.website_url && (
-              <Link href={profile.website_url} target="_blank" rel="noopener noreferrer" 
-                    className="text-[color:var(--texto-secundario)] hover:text-[color:var(--acento-laranja)] text-3xl"
-                    aria-label="Site Pessoal">
-                <i className="fas fa-globe"></i>
               </Link>
             )}
           </div>
