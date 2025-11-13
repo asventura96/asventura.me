@@ -5,7 +5,9 @@ import type { Metadata } from "next";
 import { Fredoka, Concert_One } from "next/font/google";
 import "./globals.css";
 
+// Importa as análises do Vercel
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 // 2. Configura as fontes como variáveis CSS
 const fredoka = Fredoka({
@@ -50,6 +52,7 @@ export default function RootLayout({
       >
         {children}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
