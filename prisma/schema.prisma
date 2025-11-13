@@ -9,101 +9,111 @@ generator client {
 
 model User {
   id           String @id @default(cuid())
-  username     String @unique // O campo que você usa para logar
+  username     String @unique
   email        String @unique
   name         String?
-  passwordHash String // O campo onde a senha hash é salva
-
+  passwordHash String
 }
 
 model profile {
-  id            Int       @id @default(1)
-  name          String
-  title         String
+  id Int @id @default(1)
 
-  // --- NOVOS CAMPOS DE CONTATO ---
-  email         String?   // O '?' significa opcional
-  phone         String?   // Ex: "+55 (31) 99999-9999"
-  location      String?   // Ex: "Belo Horizonte, MG"
+  /// Nome completo (Ex: "André Ventura")
+  name  String
+  /// Título profissional (Ex: "Desenvolvedor Full Stack")
+  title String
 
-  // --- NOVOS CAMPOS DE REDES SOCIAIS ---
-  linkedin_url  String?
-  github_url    String?
-  website_url   String?   // Para o teu asventura.me, por exemplo
+  // Contato
+  email    String?
+  phone    String?
+  location String?
 
-  // --- NOVOS CAMPOS PESSOAIS ---
-  // Data de Nascimento (para calcular idade e signo)
-  birthdate     DateTime? @db.Date 
-  marital_status String?   // Estado Civil
+  // Redes Sociais
+  linkedin_url String?
+  github_url   String?
+  website_url  String?
 
-  // --- NOVOS CAMPOS DE TEXTO LONGO ---
-  // (Usamos @db.Text para textos longos)
-  personal_summary String?   @db.Text // "Perfil Pessoal" / "Carta de Apresentação"
-  professional_objectives String? @db.Text // "Objetivos Profissionais"
-  photo_url      String?   // URL da foto do perfil
+  // Pessoal
+  birthdate      DateTime? @db.Date
+  marital_status String?
+
+  // Textos Longos
+  /// "Sobre mim" / "Carta de Apresentação"
+  personal_summary        String? @db.Text
+  /// "Objetivos Profissionais"
+  professional_objectives String? @db.Text
+  photo_url               String?
 }
 
 model skills {
-  id          Int     @id @default(autoincrement())
-  name        String  // Ex: "Python & Django", "WordPress (Elementor)"
-  description String  @db.Text // Ex: "Conhecimento prático em Python com experiência..."
-  category    String  // Ex: "Back-end", "Front-end", "Ferramentas", "Soft Skill"
+  id   Int    @id @default(autoincrement())
+  name String
+  /// Descrição detalhada da competência.
+  description String @db.Text
+  /// Categoria para agrupamento (Ex: "Back-end", "Front-end", "Ferramenta")
+  category    String
 }
 
 model experiences {
   id          Int     @id @default(autoincrement())
   company     String
   role        String
-  period      String  // (Campo antigo, vamos preencher automaticamente)
-  description String  @db.Text // (Campo antigo, vamos usar para 'Atividades')
+  /// Descrição das atividades e responsabilidades.
+  description String  @db.Text
+  location    String?
+  start_date  String?
+  end_date    String?
+  /// Verdadeiro se for o emprego atual.
+  is_current  Boolean @default(false)
+  salary      String?
+  exit_reason String?
 
-  // --- CAMPOS NOVOS ADICIONADOS ---
-  location    String? // O '?' significa que é opcional
-  start_date  String? // Data de Admissão (Ex: 10/2021)
-  end_date    String? // Data de Desligamento (Ex: 05/2025)
-  is_current  Boolean @default(false) // Checkbox "Atualmente"
-  salary      String? // Salário (Opcional)
-  exit_reason String? // Motivo do Desligamento (Opcional)
+  /// Campo legado. Não utilizar.
+  period String
 }
 
 model Education {
-  id          Int      @id @default(autoincrement())
-
-  institution String   // Ex: PUC Minas
-
-  // Substituímos 'degree' por estes dois campos:
-  level       String   // Nível (Graduação, Pós, etc.) - Será <select>
-  course_name String   // Nome do Curso (Engenharia de Software)
-
-  // Campos de data (mm/aaaa)
-  start_date  String   // Ex: "08/2021"
-  end_date    String?  // Ex: "09/2026" (Opcional)
-
-  // Status (Cursando, Concluído, Trancado)
-  status      String   // Será <select>
-
-  description String?  @db.Text // Opcional
+  id   Int    @id @default(autoincrement())
+  /// Ex: "PUC Minas"
+  institution String
+  /// Nível (Ex: "Graduação", "Pós-Graduação")
+  level       String
+  /// Nome do Curso (Ex: "Engenharia de Software")
+  course_name String
+  /// Data de início (Ex: "08/2021")
+  start_date  String
+  /// Data de término (Ex: "09/2026")
+  end_date    String?
+  /// Status (Ex: "Cursando", "Concluído", "Trancado")
+  status      String
+  description String? @db.Text
 }
 
 model Course {
-  id          Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  name        String   // O nome do curso/certificação
-  type        String   // Tipo (Curso ou Certificação) - Será <select>
-  institution String   // Instituição emitente
-  date        String   // Data (mm/aaaa)
-  workload    Int?     // Carga-horária (Opcional, ex: "40 horas")
+  /// Nome do curso ou certificação
+  name        String
+  /// Tipo (Ex: "Curso", "Certificação")
+  type        String
+  institution String
+  /// Data de conclusão (Ex: "10/2025")
+  date        String
+  /// Carga-horária em horas
+  workload    Int?
 
-  // Competências adquiridas (um campo de texto para listá-las)
-  skills_acquired String?  @db.Text 
-
-  url         String?  // URL do certificado (Opcional)
-  notes       String?  @db.Text // Observações (Opcional)
+  /// Competências adquiridas
+  skills_acquired String? @db.Text
+  /// URL do certificado
+  url             String?
+  /// Observações adicionais
+  notes           String? @db.Text
 }
 
 model Language {
-  id    Int     @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  name  String  // Ex: "Inglês"
-  level String  // Ex: "Avançado" (Será <select> no admin)
+  name  String
+  /// Nível (Ex: "Básico", "Intermediário", "Avançado", "Nativo")
+  level String
 }
