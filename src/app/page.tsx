@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prismaClient';
 import Link from 'next/link';
 import Image from 'next/image';
 /**
- * Importa o 'invólucro' dinâmico, que é um Client Component
- * seguro para ser usado dentro deste Server Component.
+ * Importa o 'invólucro' dinâmico para carregar o componente ProfileInfo
+ * apenas no cliente, evitando erros de Hydration (diferença de data/hora servidor vs cliente).
  */
 import { DynamicProfileInfo } from '@/components/DynamicProfileInfo';
 
@@ -12,7 +12,7 @@ import { DynamicProfileInfo } from '@/components/DynamicProfileInfo';
 type SkillId = string | number;
 
 /**
- * Tipagem para a skill (usada por 'groupSkillsByCategory').
+ * Definição de tipo para as competências principais do perfil.
  */
 interface Skill {
   id: SkillId;
@@ -26,7 +26,9 @@ type SkillsByCategory = Record<string, Skill[]>;
 // === Funções Auxiliares (Servidor) ===
 
 /**
- * Agrupa as skills por categoria para exibição.
+ * Agrupa o array plano de skills em um objeto categorizado.
+ * Ex: { "Back-end": [SkillA, SkillB], "Front-end": [SkillC] }
+ * @param skills Array de skills vindas do banco.
  */
 function groupSkillsByCategory(skills: Skill[]): SkillsByCategory {
   return skills.reduce<SkillsByCategory>((acc, skill) => {
@@ -38,7 +40,8 @@ function groupSkillsByCategory(skills: Skill[]): SkillsByCategory {
 }
 
 /**
- * Ordena um array de objetos por um campo de data (ex: "MM/YYYY").
+ * Ordena um array de objetos com base em um campo de data no formato "MM/YYYY".
+ * Converte a string para um inteiro comparável (YYYYMM) para ordenação correta.
  */
 function sortEntriesByDate<T>(entries: T[], dateField: keyof T) {
   const toSortableNumber = (dateValue: unknown): number => {
@@ -56,15 +59,15 @@ function sortEntriesByDate<T>(entries: T[], dateField: keyof T) {
   return [...entries].sort((a, b) => {
     const dateA = toSortableNumber(a[dateField]);
     const dateB = toSortableNumber(b[dateField]);
-    return dateB - dateA;
+    return dateB - dateA; // Decrescente (mais recente primeiro)
   });
 }
 
-// === Busca de Dados (Servidor) ===
+// === Busca de Dados (Server-Side) ===
 
 /**
- * Busca todos os dados necessários para a página.
- * Executa em paralelo no servidor.
+ * Função principal de data fetching.
+ * Executa todas as consultas ao banco de dados em paralelo.
  */
 async function getData() {
   try {
@@ -76,23 +79,47 @@ async function getData() {
       courses,
       languages
     ] = await Promise.all([
+      // 1. Busca o Perfil
       prisma.profile.findFirst({ where: { id: 1 } }),
-      /**
-       * FILTRO ESSENCIAL:
-       * Busca apenas as skills onde 'showOnProfile' é true.
-       * Skills criadas pelos Cursos (com 'false') não aparecerão aqui.
-       */
+      
+      // 2. Busca Skills (Apenas as marcadas para exibir no perfil)
       prisma.skills.findMany({ 
         where: { showOnProfile: true }, 
         orderBy: { category: 'asc' } 
       }),
+      
+      // 3. Busca Experiências
       prisma.experiences.findMany(),
+      
+      // 4. Busca Formação
       prisma.education.findMany(),
-      prisma.course.findMany(),
+      
+      // 5. Busca Cursos (COM RELAÇÃO DE SKILLS ORDENADA)
+      prisma.course.findMany({
+        include: {
+          skills: { // Tabela de junção (SkillsEmCursos)
+            /**
+             * Ordena as skills relacionadas alfabeticamente pelo nome.
+             */
+            orderBy: {
+              skill: {
+                name: 'asc'
+              }
+            },
+            include: {
+              skill: { // Tabela de Skills original
+                select: { name: true } // Trazemos apenas o nome para otimizar
+              }
+            }
+          }
+        }
+      }),
+      
+      // 6. Busca Idiomas
       prisma.language.findMany({ orderBy: { name: 'asc' } })
     ]);
 
-    // Ordenação dos dados no servidor
+    // Ordenação pós-fetch (JavaScript) para garantir a ordem cronológica
     const sortedExperiences = sortEntriesByDate(experiences || [], 'start_date');
     const sortedEducation = sortEntriesByDate(education || [], 'start_date');
     const sortedCourses = sortEntriesByDate(courses || [], 'date');
@@ -102,19 +129,19 @@ async function getData() {
       skills: skills || [],
       experiences: sortedExperiences,
       education: sortedEducation,
-      courses: sortedCourses,
+      courses: sortedCourses, // 'courses' agora contém o array 'skills' ordenado
       languages: languages || []
     };
 
   } catch (error) {
-    console.error("Erro ao buscar dados do banco:", error);
+    console.error("Erro crítico ao buscar dados do banco:", error);
     return {
       profile: null, skills: [], experiences: [], education: [], courses: [], languages: []
     };
   }
 }
 
-// === Componentes Auxiliares (Servidor) ===
+// === Componentes Auxiliares de UI ===
 
 interface SectionTitleProps {
   title: string;
@@ -128,12 +155,13 @@ function SectionTitle({ title }: SectionTitleProps) {
   )
 }
 
-// === Componente Principal (Página) ===
+// === Componente Principal (Server Component) ===
 
 export default async function Home() {
 
   const { profile, skills, experiences, education, courses, languages } = await getData();
 
+  // Tratamento de erro caso o perfil não exista ou o banco falhe
   if (!profile) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -145,14 +173,14 @@ export default async function Home() {
     )
   }
 
-  // Agrupamento de skills (filtradas)
+  // Agrupa as skills principais por categoria para exibição
   const skillsByCategory = groupSkillsByCategory(skills);
 
   return (
     <div className="max-w-6xl mx-auto p-8 md:p-12 lg:p-16">
       <div className="lg:grid lg:grid-cols-3 lg:gap-16">
 
-        {/* --- COLUNA DA ESQUERDA --- */}
+        {/* --- COLUNA DA ESQUERDA (Sticky Sidebar) --- */}
         <header className="lg:sticky lg:top-12 lg:h-screen lg:col-span-1 flex flex-col items-center lg:items-start text-center lg:text-left">
 
           {profile.photo_url && (
@@ -163,7 +191,7 @@ export default async function Home() {
                 width={160}
                 height={160}
                 className="w-full h-full object-cover"
-                priority
+                priority // Prioridade de carregamento para LCP
               />
             </div>
           )}
@@ -175,10 +203,7 @@ export default async function Home() {
             {profile.title}
           </p>
 
-          {/*
-           * Renderiza o 'invólucro' (wrapper) que
-           * carregará o 'ProfileInfo' apenas no cliente.
-           */}
+          {/* Componente Cliente para renderizar idade e dados sensíveis à hidratação */}
           <DynamicProfileInfo profile={profile} />
 
           {/* Links Sociais */}
@@ -201,10 +226,10 @@ export default async function Home() {
           <hr className="w-full border-zinc-700 my-12 lg:hidden" />
         </header>
 
-        {/* --- COLUNA DA DIREITA --- */}
+        {/* --- COLUNA DA DIREITA (Conteúdo Principal) --- */}
         <main className="lg:col-span-2">
           
-          {/* Seções de Conteúdo (Sobre, Objetivos, etc.) */}
+          {/* 1. Sobre Mim */}
           {profile.personal_summary && (
             <section className="mb-12">
               <SectionTitle title="Sobre Mim" />
@@ -212,6 +237,7 @@ export default async function Home() {
             </section>
           )}
 
+          {/* 2. Objetivos */}
           {profile.professional_objectives && (
             <section className="mb-12">
               <SectionTitle title="Objetivos Profissionais" />
@@ -219,6 +245,7 @@ export default async function Home() {
             </section>
           )}
 
+          {/* 3. Formação Acadêmica */}
           <section className="mb-12">
             <SectionTitle title="Formação Acadêmica" />
             <div className="space-y-6">
@@ -240,17 +267,19 @@ export default async function Home() {
             </div>
           </section>
 
+          {/* 4. Idiomas */}
           <section className="mb-12">
             <SectionTitle title="Idiomas" />
             <div className="space-y-2 pl-4">
               {languages.map((lang) => (
                 <p key={lang.id} className="text-texto-principal">
                   <strong className="font-semibold text-texto-secundario">{lang.name}:</strong> {lang.level}
-                </p>
+                </p> 
               ))}
             </div>
           </section>
 
+          {/* 5. Experiência Profissional */}
           <section className="mb-12">
             <SectionTitle title="Experiência Profissional" />
             <div className="space-y-6">
@@ -265,7 +294,7 @@ export default async function Home() {
             </div>
           </section>
 
-          {/* Habilidades e Competências (Agora filtradas) */}
+          {/* 6. Habilidades e Competências (Gerais) */}
           <section className="mb-12">
             <SectionTitle title="Habilidades e Competências" />
             <div className="space-y-6">
@@ -289,7 +318,7 @@ export default async function Home() {
             </div>
           </section>
 
-          {/* Cursos e Certificações */}
+          {/* 7. Cursos e Certificações (COM SKILLS RELACIONADAS) */}
           <section className="mb-12">
             <SectionTitle title="Cursos e Certificações" />
             <div className="space-y-6">
@@ -300,16 +329,22 @@ export default async function Home() {
                   <p className="text-sm text-texto-secundario opacity-80">
                     {course.type} · {course.date} {course.workload ? `(${course.workload} horas)` : ''}
                   </p>
-                  {/* TODO: Este campo 'skills_acquired' (legado) deve ser substituído
-                       pela nova relação de skills. 
-                       'getData()' precisará ser atualizado para incluir 
-                       'course.skills.skill.name'
+                  
+                  {/* LÓGICA DE EXIBIÇÃO DAS SKILLS:
+                    Verifica se existem skills relacionadas (agora ordenadas) e as exibe.
+                    Caso contrário (fallback), tenta exibir o campo legado 'skills_acquired'.
                   */}
-                  {course.skills_acquired && (
+                  {course.skills && course.skills.length > 0 ? (
+                    <p className="mt-2 text-texto-principal text-sm">
+                      <strong>Competências:</strong>{' '}
+                      {course.skills.map(s => s.skill.name).join(', ')}
+                    </p>
+                  ) : course.skills_acquired ? (
                     <p className="mt-2 text-texto-principal text-sm">
                       <strong>Competências:</strong> {course.skills_acquired}
                     </p>
-                  )}
+                  ) : null}
+
                   {course.url && (
                     <Link href={course.url} target="_blank" rel="noopener noreferrer"
                       className="text-sm font-medium text-[color:var(--acento-verde)] hover:underline">
