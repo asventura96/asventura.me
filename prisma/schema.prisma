@@ -52,6 +52,10 @@ model skills {
   description String @db.Text
   /// Categoria para agrupamento (Ex: "Back-end", "Front-end", "Ferramenta")
   category    String
+  // Controla se a skill aparece na seção "Competências" do perfil público
+  showOnProfile Boolean @default(false)
+  // Relação com Cursos
+  cursos SkillsEmCursos[]
 }
 
 model experiences {
@@ -108,6 +112,8 @@ model Course {
   url             String?
   /// Observações adicionais
   notes           String? @db.Text
+  // Relação com Cursos
+  skills SkillsEmCursos[]
 }
 
 model Language {
@@ -116,4 +122,14 @@ model Language {
   name  String
   /// Nível (Ex: "Básico", "Intermediário", "Avançado", "Nativo")
   level String
+}
+
+model SkillsEmCursos {
+  curso   Course @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  cursoId Int
+  
+  skill   skills @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  skillId Int
+
+  @@id([cursoId, skillId])
 }
