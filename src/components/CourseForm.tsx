@@ -1,16 +1,18 @@
 // src/components/CourseForm.tsx
-'use client' 
+'use client'
 
 import { useTransition, useState } from 'react'
-import { IMaskInput } from 'react-imask' 
-import IMask from 'imask' 
+import { IMaskInput } from 'react-imask'
+import IMask from 'imask'
+// Importação usando alias para garantir que o caminho seja encontrado
+import SkillSelector from '@/components/admin/SkillSelector'
 
 type FormActionResult = {
   success: boolean;
   message?: string;
-} | void; 
+} | void;
 
-type FormAction = (formData: FormData) => Promise<FormActionResult>; 
+type FormAction = (formData: FormData) => Promise<FormActionResult>;
 
 const dateMask = {
   mask: 'MM/YYYY',
@@ -33,6 +35,13 @@ type CourseFormProps = {
     skills_acquired: string | null;
     url: string | null;
     notes: string | null;
+    // Definição correta para receber as skills do include do Prisma
+    skills?: {
+      skill: {
+        id: number;
+        name: string;
+      }
+    }[];
   };
   buttonText: string;
 };
@@ -41,6 +50,14 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
 
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
+
+  // Inicializa o estado do seletor com as skills existentes (se houver)
+  const [selectedSkills, setSelectedSkills] = useState<readonly { value: number; label: string }[]>(
+    initialData?.skills?.map((s) => ({
+      value: s.skill.id,
+      label: s.skill.name,
+    })) || []
+  );
 
   const inputStyle = "mt-1 block w-full px-3 py-2 border border-zinc-400 rounded-sm shadow-sm bg-white text-black focus:outline-none focus:ring-[color:var(--acento-verde)] focus:border-[color:var(--acento-verde)]";
 
@@ -69,6 +86,13 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
       {initialData?.id && (
         <input type="hidden" name="id" value={initialData.id} />
       )}
+
+      {/* Campo oculto essencial para enviar os IDs das skills para a Server Action */}
+      <input 
+        type="hidden" 
+        name="skillIdsJson" 
+        value={JSON.stringify(selectedSkills.map(s => s.value))} 
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -163,18 +187,18 @@ export default function CourseForm({ action, initialData, buttonText }: CourseFo
         />
       </div>
 
+      {/* SUBSTITUIÇÃO: SkillSelector no lugar do Textarea antigo */}
       <div>
-        <label htmlFor="skills_acquired" className="block text-sm font-medium text-zinc-800">
+        <label className="block text-sm font-medium text-zinc-800 mb-1">
           Competências Adquiridas (Skills)
         </label>
-        <textarea
-          id="skills_acquired"
-          name="skills_acquired"
-          rows={3}
-          className={inputStyle}
-          placeholder="Liste as principais habilidades aprendidas..."
-          defaultValue={initialData?.skills_acquired || ''}
+        <SkillSelector 
+          value={selectedSkills}
+          onChange={setSelectedSkills}
         />
+        <p className="text-xs text-gray-500 mt-1">
+          Digite para buscar ou criar novas skills.
+        </p>
       </div>
 
       <div>
