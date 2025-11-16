@@ -1,13 +1,19 @@
 // src/app/page.tsx
-
 import { prisma } from '@/lib/prismaClient';
 import Link from 'next/link';
 import Image from 'next/image';
+/**
+ * Importa o 'invólucro' dinâmico, que é um Client Component
+ * seguro para ser usado dentro deste Server Component.
+ */
+import { DynamicProfileInfo } from '@/components/DynamicProfileInfo';
 
 // === Tipos Globais da Página ===
-
 type SkillId = string | number;
 
+/**
+ * Tipagem para a skill (usada por 'groupSkillsByCategory').
+ */
 interface Skill {
   id: SkillId;
   name: string;
@@ -17,38 +23,11 @@ interface Skill {
 
 type SkillsByCategory = Record<string, Skill[]>;
 
-// === Funções Auxiliares ===
+// === Funções Auxiliares (Servidor) ===
 
-function getAge(birthDate: Date): number | null {
-  if (!birthDate) return null;
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  return age;
-}
-
-function getZodiacSign(birthDate: Date): string {
-  if (!birthDate) return "---";
-  const day = birthDate.getDate() + 1;
-  const month = birthDate.getMonth() + 1;
-  if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return "♒ Aquário";
-  if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) return "♓ Peixes";
-  if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "♈ Áries";
-  if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return "♉ Touro";
-  if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return "♊ Gêmeos";
-  if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return "♋ Câncer";
-  if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return "♌ Leão";
-  if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return "♍ Virgem";
-  if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return "♎ Libra";
-  if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return "♏ Escorpião";
-  if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return "♐ Sagitário";
-  if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return "♑ Capricórnio";
-  return "---";
-}
-
+/**
+ * Agrupa as skills por categoria para exibição.
+ */
 function groupSkillsByCategory(skills: Skill[]): SkillsByCategory {
   return skills.reduce<SkillsByCategory>((acc, skill) => {
     const category = (skill.category ?? 'Outras').trim();
@@ -59,13 +38,10 @@ function groupSkillsByCategory(skills: Skill[]): SkillsByCategory {
 }
 
 /**
- * Ordena um array de objetos (de forma imutável) por um campo de data "MM/YYYY".
- * Usa um tipo genérico <T> para ser type-safe e evitar 'any'.
+ * Ordena um array de objetos por um campo de data (ex: "MM/YYYY").
  */
 function sortEntriesByDate<T>(entries: T[], dateField: keyof T) {
-  /** Converte "MM/YYYY" para um número (ex: 202512) para ordenação */
   const toSortableNumber = (dateValue: unknown): number => {
-    // Validação robusta para o valor, garantindo que é uma string
     if (typeof dateValue !== 'string' || !dateValue || !dateValue.includes('/')) {
       return 0;
     }
@@ -74,24 +50,24 @@ function sortEntriesByDate<T>(entries: T[], dateField: keyof T) {
     const month = parseInt(parts[0], 10);
     const year = parseInt(parts[1], 10);
     if (isNaN(month) || isNaN(year)) return 0;
-    // Formato YYYYMM para ordenação correta
     return year * 100 + month;
   };
 
-  // Retorna um NOVO array ordenado (imutabilidade)
   return [...entries].sort((a, b) => {
     const dateA = toSortableNumber(a[dateField]);
     const dateB = toSortableNumber(b[dateField]);
-    // Ordena do mais recente (maior número) para o mais antigo (menor número)
     return dateB - dateA;
   });
 }
 
-// === Busca de Dados ===
+// === Busca de Dados (Servidor) ===
 
+/**
+ * Busca todos os dados necessários para a página.
+ * Executa em paralelo no servidor.
+ */
 async function getData() {
   try {
-    // Executa todas as queries em paralelo para melhor performance
     const [
       profile,
       skills,
@@ -101,14 +77,22 @@ async function getData() {
       languages
     ] = await Promise.all([
       prisma.profile.findFirst({ where: { id: 1 } }),
-      prisma.skills.findMany({ orderBy: { category: 'asc' } }),
+      /**
+       * FILTRO ESSENCIAL:
+       * Busca apenas as skills onde 'showOnProfile' é true.
+       * Skills criadas pelos Cursos (com 'false') não aparecerão aqui.
+       */
+      prisma.skills.findMany({ 
+        where: { showOnProfile: true }, 
+        orderBy: { category: 'asc' } 
+      }),
       prisma.experiences.findMany(),
       prisma.education.findMany(),
       prisma.course.findMany(),
       prisma.language.findMany({ orderBy: { name: 'asc' } })
     ]);
 
-    // Ordena os resultados *depois* que todos foram buscados
+    // Ordenação dos dados no servidor
     const sortedExperiences = sortEntriesByDate(experiences || [], 'start_date');
     const sortedEducation = sortEntriesByDate(education || [], 'start_date');
     const sortedCourses = sortEntriesByDate(courses || [], 'date');
@@ -124,14 +108,13 @@ async function getData() {
 
   } catch (error) {
     console.error("Erro ao buscar dados do banco:", error);
-    // Retorna um estado vazio em caso de falha
     return {
       profile: null, skills: [], experiences: [], education: [], courses: [], languages: []
     };
   }
 }
 
-// === Componentes Auxiliares ===
+// === Componentes Auxiliares (Servidor) ===
 
 interface SectionTitleProps {
   title: string;
@@ -162,16 +145,14 @@ export default async function Home() {
     )
   }
 
-  // Processamento de dados para exibição
+  // Agrupamento de skills (filtradas)
   const skillsByCategory = groupSkillsByCategory(skills);
-  const age = profile.birthdate ? getAge(profile.birthdate) : null;
-  const sign = profile.birthdate ? getZodiacSign(profile.birthdate) : null;
 
   return (
     <div className="max-w-6xl mx-auto p-8 md:p-12 lg:p-16">
       <div className="lg:grid lg:grid-cols-3 lg:gap-16">
 
-        {/* --- COLUNA DA ESQUERDA (STICKY) --- */}
+        {/* --- COLUNA DA ESQUERDA --- */}
         <header className="lg:sticky lg:top-12 lg:h-screen lg:col-span-1 flex flex-col items-center lg:items-start text-center lg:text-left">
 
           {profile.photo_url && (
@@ -182,7 +163,7 @@ export default async function Home() {
                 width={160}
                 height={160}
                 className="w-full h-full object-cover"
-                priority // Bom para LCP (Largest Contentful Paint)
+                priority
               />
             </div>
           )}
@@ -194,14 +175,11 @@ export default async function Home() {
             {profile.title}
           </p>
 
-          <ul className="text-sm text-[color:var(--branco)] space-y-2 mt-8">
-            {profile.location && <li><i className="fa-solid fa-location-dot w-6 text-center text-[color:var(--acento-verde)]"></i> {profile.location}</li>}
-            {profile.email && <li><Link href={`mailto:${profile.email}`} className="hover:text-[color:var(--acento-laranja)]"><i className="fa-solid fa-envelope w-6 text-center text-[color:var(--acento-verde)]"></i> {profile.email}</Link></li>}
-            {profile.phone && <li><Link href={`tel:${profile.phone}`} className="hover:text-[color:var(--acento-laranja)]"><i className="fa-solid fa-phone w-6 text-center text-[color:var(--acento-verde)]"></i> {profile.phone}</Link></li>}
-            {age && profile.marital_status && (
-              <li><i className="fa-solid fa-user w-6 text-center text-[color:var(--acento-verde)]"></i> {age} anos, {sign}, {profile.marital_status}</li>
-            )}
-          </ul>
+          {/*
+           * Renderiza o 'invólucro' (wrapper) que
+           * carregará o 'ProfileInfo' apenas no cliente.
+           */}
+          <DynamicProfileInfo profile={profile} />
 
           {/* Links Sociais */}
           <div className="flex space-x-6 mt-8 justify-center lg:justify-start">
@@ -223,10 +201,10 @@ export default async function Home() {
           <hr className="w-full border-zinc-700 my-12 lg:hidden" />
         </header>
 
-        {/* --- COLUNA DA DIREITA (ROLÁVEL) --- */}
+        {/* --- COLUNA DA DIREITA --- */}
         <main className="lg:col-span-2">
-
-          {/* 1. SOBRE MIM */}
+          
+          {/* Seções de Conteúdo (Sobre, Objetivos, etc.) */}
           {profile.personal_summary && (
             <section className="mb-12">
               <SectionTitle title="Sobre Mim" />
@@ -234,7 +212,6 @@ export default async function Home() {
             </section>
           )}
 
-          {/* 2. OBJETIVOS PROFISSIONAIS */}
           {profile.professional_objectives && (
             <section className="mb-12">
               <SectionTitle title="Objetivos Profissionais" />
@@ -242,7 +219,6 @@ export default async function Home() {
             </section>
           )}
 
-          {/* 3. FORMAÇÃO ACADÊMICA */}
           <section className="mb-12">
             <SectionTitle title="Formação Acadêmica" />
             <div className="space-y-6">
@@ -264,7 +240,6 @@ export default async function Home() {
             </div>
           </section>
 
-          {/* 4. IDIOMAS */}
           <section className="mb-12">
             <SectionTitle title="Idiomas" />
             <div className="space-y-2 pl-4">
@@ -276,7 +251,6 @@ export default async function Home() {
             </div>
           </section>
 
-          {/* 5. EXPERIÊNCIA PROFISSIONAL */}
           <section className="mb-12">
             <SectionTitle title="Experiência Profissional" />
             <div className="space-y-6">
@@ -291,7 +265,7 @@ export default async function Home() {
             </div>
           </section>
 
-          {/* 6. HABILIDADES E COMPETÊNCIAS */}
+          {/* Habilidades e Competências (Agora filtradas) */}
           <section className="mb-12">
             <SectionTitle title="Habilidades e Competências" />
             <div className="space-y-6">
@@ -315,7 +289,7 @@ export default async function Home() {
             </div>
           </section>
 
-          {/* 7. CURSOS E CERTIFICAÇÕES */}
+          {/* Cursos e Certificações */}
           <section className="mb-12">
             <SectionTitle title="Cursos e Certificações" />
             <div className="space-y-6">
@@ -326,6 +300,11 @@ export default async function Home() {
                   <p className="text-sm text-texto-secundario opacity-80">
                     {course.type} · {course.date} {course.workload ? `(${course.workload} horas)` : ''}
                   </p>
+                  {/* TODO: Este campo 'skills_acquired' (legado) deve ser substituído
+                       pela nova relação de skills. 
+                       'getData()' precisará ser atualizado para incluir 
+                       'course.skills.skill.name'
+                  */}
                   {course.skills_acquired && (
                     <p className="mt-2 text-texto-principal text-sm">
                       <strong>Competências:</strong> {course.skills_acquired}
