@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma db seed && next build",
+    "build": "npx dotenv -e .env -- prisma generate && npx dotenv -e .env -- prisma db seed && next build",
     "start": "next start",
     "lint": "eslint"
   },
