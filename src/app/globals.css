@@ -1,152 +1,165 @@
-/* src/app/globals.css (Corrigido com as tuas fontes) */
+/* ================================
+   GLOBAL STYLESHEET
+   Projeto: Next.js + TailwindCSS
+   Objetivo: Variáveis globais, tipografia,
+   reset moderno e estilos base.
+================================ */
 
+/* 1) Importa utilitários do TailwindCSS + Preflight (reset) */
 @import "tailwindcss";
 
-@import "tw-animate-css";
-
-@custom-variant dark (&:is(.dark *));
-
+/* ================================
+   VARIÁVEIS DE TEMA (CSS Custom Properties)
+   - Mantidas para consistência e fácil manutenção.
+   - Úteis para casos onde Tailwind não cobre 100%.
+================================ */
 :root {
-  /* 1. Variáveis da paleta (sem mudanças) */
   --branco: #FFFFFF;
-  --preto: #000000;     
+  --preto: #000000;
+
+  /* Paleta principal */
+  --background: #023047;       /* Azul escuro para fundo */
+  --foreground: #D4F0FC;       /* Azul claro para elementos */
+
+  /* Acentos */
   --acento-verde: #2ECC40;
   --acento-laranja: #FF8D37;
   --acento-roxo: #5D3Fd3;
+
+  /* Texto */
   --texto-secundario: #89D6FB;
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Seleção */
+  --selection-bg: #5D3FD3;     /* Roxo */
+  --selection-fg: #FFFFFF;
 }
 
-/* 2. Removemos o @theme inline, pois o Tailwind vai
-   gerir as fontes e cores através do layout.tsx */
-
-body {
-  color: var(--branco);
-
-  /* 3. APLICA AS TUAS FONTES
-     - Usa Fredoka como padrão
-     - Usa Century Gothic (se o utilizador a tiver) como 2ª opção
-     - Usa sans-serif (genérica) como 3ª opção
-  */
-  font-family: var(--font-fredoka), "Century Gothic", sans-serif;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* 4. Define a fonte dos títulos (H1, H2, H3) para a Concert One */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-concert-one), "Century Gothic", sans-serif;
-}
-
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
+/* ================================
+   RESET MODERNO + BASES
+   - Complementa o Tailwind Preflight.
+   - Foco em box-sizing, tipografia, imagens,
+     interações, e acessibilidade.
+================================ */
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  /* 1) Box-sizing consistente em toda a árvore */
+  *, *::before, *::after {
+    box-sizing: border-box;
   }
+
+  /* 2) Suavização e antialias de fontes (melhor renderização) */
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Melhora rolagem com âncoras */
+    scroll-behavior: smooth;
+
+    /* Ajuda a UI a escolher controles e esquema de cores */
+    color-scheme: light dark;
+  }
+
+  /* 3) Body: cores e tipografia padrão
+     - Fontes definidas via layout.tsx (variáveis de fonte do Next/Tailwind)
+  */
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--branco);
+
+    /* Tipografia:
+       1ª: Fredoka (via Next Font -> var(--font-fredoka))
+       2ª: Century Gothic (fallback local)
+       3ª: sans-serif genérico
+    */
+    font-family: var(--font-fredoka), "Century Gothic", sans-serif;
+    line-height: 1.5;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* 4) Headings: usam Concert One (via Next Font) com fallback */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-concert-one), "Century Gothic", sans-serif;
+    line-height: 1.2;
+  }
+
+  /* 5) Imagens e mídia responsivas por padrão */
+  img, picture, video, canvas, svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* 6) Inputs e botões herdam fonte do body para consistência */
+  input, button, textarea, select {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Remove estilos nativos agressivos de botão em alguns navegadores */
+  button {
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  /* 7) Links: remove sublinhado padrão; use utilitários Tailwind conforme necessário */
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* 8) Tabelas base: borda e colapso previsíveis */
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+
+  /* 9) Seleção de texto com contraste adequado usando variáveis do tema */
+  ::selection {
+    background: var(--selection-bg);
+    color: var(--selection-fg);
+  }
+
+  /* 10) Foco visível e acessível (não interfere com mouse) */
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 2px solid var(--acento-laranja);
+    outline-offset: 2px;
+  }
+
+  /* 11) Estado de redução de movimento para usuários sensíveis */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* 12) Utilidade leve: classes .sr-only / .not-sr-only (espelham as do Tailwind)
+     - Útil quando precisar em CSS puro fora do escopo de utilitários */
+  .sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+  .not-sr-only {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
   }
 }
