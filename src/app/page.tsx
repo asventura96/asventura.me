@@ -1,360 +1,95 @@
-// src/app/page.tsx
-import { prisma } from '@/lib/prismaClient';
-import Link from 'next/link';
-import Image from 'next/image';
 /**
- * Importa o 'invólucro' dinâmico para carregar o componente ProfileInfo
- * apenas no cliente, evitando erros de Hydration (diferença de data/hora servidor vs cliente).
+ * @file src/app/page.tsx
+ * @description Controlador principal da aplicação (Root Page).
+ * Responsável pela orquestração de dados do servidor e composição da View.
+ * * ARQUITETURA: Server Component (RSC)
+ * - Data Fetching ocorre no servidor (Node.js runtime).
+ * - HTML pré-renderizado é enviado ao cliente.
+ * - Zero bundle size de JavaScript para a lógica de busca.
  */
-import { DynamicProfileInfo } from '@/components/DynamicProfileInfo';
 
-// === Tipos Globais da Página ===
-type SkillId = string | number;
-
-/**
- * Definição de tipo para as competências principais do perfil.
- */
-interface Skill {
-  id: SkillId;
-  name: string;
-  description: string;
-  category?: string | null;
-}
-
-type SkillsByCategory = Record<string, Skill[]>;
-
-// === Funções Auxiliares (Servidor) ===
+import { getResumeData } from '@/services/resumeService';
+import { SectionTitle } from '@/components/ui/SectionTitle';
+import { ResumeSidebar } from '@/components/resume/ResumeSidebar';
+import { EducationList } from '@/components/resume/EducationList';
+import { LanguageList } from '@/components/resume/LanguageList';
+import { ExperienceList } from '@/components/resume/ExperienceList';
+import { SkillList } from '@/components/resume/SkillList';
+import { CourseList } from '@/components/resume/CourseList';
 
 /**
- * Agrupa o array plano de skills em um objeto categorizado.
- * Ex: { "Back-end": [SkillA, SkillB], "Front-end": [SkillC] }
- * @param skills Array de skills vindas do banco.
+ * Componente Raiz assíncrono.
+ * Next.js 13+ App Router permite async/await diretamente no componente.
  */
-function groupSkillsByCategory(skills: Skill[]): SkillsByCategory {
-  return skills.reduce<SkillsByCategory>((acc, skill) => {
-    const category = (skill.category ?? 'Outras').trim();
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(skill);
-    return acc;
-  }, {});
-}
-
-/**
- * Ordena um array de objetos com base em um campo de data no formato "MM/YYYY".
- * Converte a string para um inteiro comparável (YYYYMM) para ordenação correta.
- */
-function sortEntriesByDate<T>(entries: T[], dateField: keyof T) {
-  const toSortableNumber = (dateValue: unknown): number => {
-    if (typeof dateValue !== 'string' || !dateValue || !dateValue.includes('/')) {
-      return 0;
-    }
-    const parts = dateValue.split('/');
-    if (parts.length !== 2) return 0;
-    const month = parseInt(parts[0], 10);
-    const year = parseInt(parts[1], 10);
-    if (isNaN(month) || isNaN(year)) return 0;
-    return year * 100 + month;
-  };
-
-  return [...entries].sort((a, b) => {
-    const dateA = toSortableNumber(a[dateField]);
-    const dateB = toSortableNumber(b[dateField]);
-    return dateB - dateA; // Decrescente (mais recente primeiro)
-  });
-}
-
-// === Busca de Dados (Server-Side) ===
-
-/**
- * Função principal de data fetching.
- * Executa todas as consultas ao banco de dados em paralelo.
- */
-async function getData() {
-  try {
-    const [
-      profile,
-      skills,
-      experiences,
-      education,
-      courses,
-      languages
-    ] = await Promise.all([
-      // 1. Busca o Perfil
-      prisma.profile.findFirst({ where: { id: 1 } }),
-      
-      // 2. Busca Skills (Apenas as marcadas para exibir no perfil)
-      prisma.skills.findMany({ 
-        where: { showOnProfile: true }, 
-        orderBy: { category: 'asc' } 
-      }),
-      
-      // 3. Busca Experiências
-      prisma.experiences.findMany(),
-      
-      // 4. Busca Formação
-      prisma.education.findMany(),
-      
-      // 5. Busca Cursos (COM RELAÇÃO DE SKILLS ORDENADA)
-      prisma.course.findMany({
-        include: {
-          skills: { // Tabela de junção (SkillsEmCursos)
-            /**
-             * Ordena as skills relacionadas alfabeticamente pelo nome.
-             */
-            orderBy: {
-              skill: {
-                name: 'asc'
-              }
-            },
-            include: {
-              skill: { // Tabela de Skills original
-                select: { name: true } // Trazemos apenas o nome para otimizar
-              }
-            }
-          }
-        }
-      }),
-      
-      // 6. Busca Idiomas
-      prisma.language.findMany({ orderBy: { name: 'asc' } })
-    ]);
-
-    // Ordenação pós-fetch (JavaScript) para garantir a ordem cronológica
-    const sortedExperiences = sortEntriesByDate(experiences || [], 'start_date');
-    const sortedEducation = sortEntriesByDate(education || [], 'start_date');
-    const sortedCourses = sortEntriesByDate(courses || [], 'date');
-
-    return {
-      profile: profile,
-      skills: skills || [],
-      experiences: sortedExperiences,
-      education: sortedEducation,
-      courses: sortedCourses, // 'courses' agora contém o array 'skills' ordenado
-      languages: languages || []
-    };
-
-  } catch (error) {
-    console.error("Erro crítico ao buscar dados do banco:", error);
-    return {
-      profile: null, skills: [], experiences: [], education: [], courses: [], languages: []
-    };
-  }
-}
-
-// === Componentes Auxiliares de UI ===
-
-interface SectionTitleProps {
-  title: string;
-}
-
-function SectionTitle({ title }: SectionTitleProps) {
-  return (
-    <h2 className="text-2xl mb-6 uppercase tracking-widest text-[color:var(--acento-verde)] border-b-2 border-[color:var(--acento-verde)] pb-2">
-      {title}
-    </h2>
-  )
-}
-
-// === Componente Principal (Server Component) ===
-
 export default async function Home() {
+  
+  // 1. Camada de Serviço: Execução de queries otimizadas (Promise.all)
+  const data = await getResumeData();
 
-  const { profile, skills, experiences, education, courses, languages } = await getData();
-
-  // Tratamento de erro caso o perfil não exista ou o banco falhe
-  if (!profile) {
+  // 2. Fail-Safe Strategy:
+  // Interrompe o fluxo de renderização caso o serviço de banco de dados esteja indisponível
+  // ou o perfil principal (ID 1) não exista, prevenindo Runtime Errors nos componentes filhos.
+  if (!data || !data.profile) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <main className="w-full max-w-3xl p-8">
-          <h1 className="text-3xl text-red-500">Erro ao carregar perfil.</h1>
-          <p>Não foi possível conectar ao banco de dados ou o perfil (ID=1) não foi cadastrado.</p>
+        <main className="w-full max-w-3xl p-8 border border-red-200 rounded bg-red-50">
+          <h1 className="text-3xl font-bold text-red-600 mb-2">Erro Crítico de Carregamento</h1>
+          <p className="text-red-800">
+            Não foi possível recuperar os dados do perfil. Verifique a conexão com o banco de dados.
+          </p>
         </main>
       </div>
-    )
+    );
   }
 
-  // Agrupa as skills principais por categoria para exibição
-  const skillsByCategory = groupSkillsByCategory(skills);
+  // Desestruturação para injeção de dependências nos componentes
+  const { profile, skillsByCategory, experiences, education, courses, languages } = data;
 
   return (
     <div className="max-w-6xl mx-auto p-8 md:p-12 lg:p-16">
+      {/* Layout Grid: Sidebar Fixa (1/3) + Conteúdo (2/3) em Desktop */}
       <div className="lg:grid lg:grid-cols-3 lg:gap-16">
 
-        {/* --- COLUNA DA ESQUERDA (Sticky Sidebar) --- */}
-        <header className="lg:sticky lg:top-12 lg:h-screen lg:col-span-1 flex flex-col items-center lg:items-start text-center lg:text-left">
+        {/* --- COMPONENTE: Sidebar (Identidade Visual e Contatos) --- */}
+        <ResumeSidebar profile={profile} />
 
-          {profile.photo_url && (
-            <div className="w-40 h-40 mb-6 rounded-full overflow-hidden border-4 border-[color:var(--acento-verde)] shadow-lg mx-auto">
-              <Image
-                src={profile.photo_url}
-                alt={`Foto de ${profile.name}`}
-                width={160}
-                height={160}
-                className="w-full h-full object-cover"
-                priority // Prioridade de carregamento para LCP
-              />
-            </div>
-          )}
-
-          <h1 className="uppercase text-center text-4xl text-[color:var(--acento-verde)]">
-            {profile.name}
-          </h1>
-          <p className="text-center text-base text-[color:var(--texto-secundario)] mt-2">
-            {profile.title}
-          </p>
-
-          {/* Componente Cliente para renderizar idade e dados sensíveis à hidratação */}
-          <DynamicProfileInfo profile={profile} />
-
-          {/* Links Sociais */}
-          <div className="flex space-x-6 mt-8 justify-center lg:justify-start">
-            {profile.linkedin_url && (
-              <Link href={profile.linkedin_url} target="_blank" rel="noopener noreferrer"
-                className="text-[color:var(--acento-verde)] hover:text-[color:var(--acento-laranja)] text-3xl"
-                aria-label="LinkedIn">
-                <i className="fab fa-linkedin"></i>
-              </Link>
-            )}
-            {profile.github_url && (
-              <Link href={profile.github_url} target="_blank" rel="noopener noreferrer"
-                className="text-[color:var(--acento-verde)] hover:text-[color:var(--acento-laranja)] text-3xl"
-                aria-label="GitHub">
-                <i className="fab fa-github"></i>
-              </Link>
-            )}
-          </div>
-          <hr className="w-full border-zinc-700 my-12 lg:hidden" />
-        </header>
-
-        {/* --- COLUNA DA DIREITA (Conteúdo Principal) --- */}
-        <main className="lg:col-span-2">
+        {/* --- ÁREA PRINCIPAL: Detalhamento do Currículo --- */}
+        <main className="lg:col-span-2 mt-12 lg:mt-0">
           
-          {/* 1. Sobre Mim */}
+          {/* Seção Condicional: Sobre Mim */}
           {profile.personal_summary && (
             <section className="mb-12">
               <SectionTitle title="Sobre Mim" />
-              <p className="text-texto-principal whitespace-pre-line">{profile.personal_summary}</p>
+              <p className="text-texto-principal whitespace-pre-line leading-relaxed">
+                {profile.personal_summary}
+              </p>
             </section>
           )}
 
-          {/* 2. Objetivos */}
+          {/* Seção Condicional: Objetivos */}
           {profile.professional_objectives && (
             <section className="mb-12">
               <SectionTitle title="Objetivos Profissionais" />
-              <p className="text-texto-principal whitespace-pre-line">{profile.professional_objectives}</p>
+              <p className="text-texto-principal whitespace-pre-line leading-relaxed">
+                {profile.professional_objectives}
+              </p>
             </section>
           )}
 
-          {/* 3. Formação Acadêmica */}
-          <section className="mb-12">
-            <SectionTitle title="Formação Acadêmica" />
-            <div className="space-y-6">
-              {education.map((edu) => (
-                <div key={edu.id} className="pl-4 border-l-2 border-[color:var(--acento-laranja)]">
-                  <h3 className="text-lg text-texto-principal">{edu.course_name}</h3>
-                  <p className="font-medium text-texto-secundario">{edu.institution}</p>
-                  <p className="text-sm text-texto-secundario opacity-80">
-                    {edu.level} · {edu.status}
-                  </p>
-                  <p className="text-sm text-texto-secundario opacity-80">
-                    {edu.start_date} - {edu.end_date || 'Atual'}
-                  </p>
-                  {edu.description && (
-                    <p className="mt-2 text-texto-principal text-sm">{edu.description}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* 4. Idiomas */}
-          <section className="mb-12">
-            <SectionTitle title="Idiomas" />
-            <div className="space-y-2 pl-4">
-              {languages.map((lang) => (
-                <p key={lang.id} className="text-texto-principal">
-                  <strong className="font-semibold text-texto-secundario">{lang.name}:</strong> {lang.level}
-                </p> 
-              ))}
-            </div>
-          </section>
-
-          {/* 5. Experiência Profissional */}
-          <section className="mb-12">
-            <SectionTitle title="Experiência Profissional" />
-            <div className="space-y-6">
-              {experiences.map((exp) => (
-                <div key={exp.id} className="pl-4 border-l-2 border-[color:var(--acento-laranja)]">
-                  <h3 className="text-lg text-texto-principal">{exp.role}</h3>
-                  <p className="font-medium text-texto-secundario">{exp.company}</p>
-                  <p className="text-sm text-texto-secundario opacity-80">{exp.period} · {exp.location}</p>
-                  <p className="mt-2 text-texto-principal whitespace-pre-line">{exp.description}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* 6. Habilidades e Competências (Gerais) */}
-          <section className="mb-12">
-            <SectionTitle title="Habilidades e Competências" />
-            <div className="space-y-6">
-              {Object.entries(skillsByCategory).map(([category, list]) => (
-                <div key={category}>
-                  <h3 className="text-lg text-[color:var(--acento-laranja)] mb-2">
-                    {category}
-                  </h3>
-                  <ul className="list-disc list-inside space-y-1">
-                    {list.map((skill) => (
-                      <li key={skill.id} className="text-texto-principal">
-                        <strong className="font-semibold text-texto-secundario">
-                          {skill.name}:
-                        </strong>{" "}
-                        {skill.description}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* 7. Cursos e Certificações (COM SKILLS RELACIONADAS) */}
-          <section className="mb-12">
-            <SectionTitle title="Cursos e Certificações" />
-            <div className="space-y-6">
-              {courses.map((course) => (
-                <div key={course.id} className="pl-4 border-l-2 border-[color:var(--acento-laranja)]">
-                  <h3 className="text-lg text-texto-principal">{course.name}</h3>
-                  <p className="font-medium text-texto-secundario">{course.institution}</p>
-                  <p className="text-sm text-texto-secundario opacity-80">
-                    {course.type} · {course.date} {course.workload ? `(${course.workload} horas)` : ''}
-                  </p>
-                  
-                  {/* LÓGICA DE EXIBIÇÃO DAS SKILLS:
-                    Verifica se existem skills relacionadas (agora ordenadas) e as exibe.
-                    Caso contrário (fallback), tenta exibir o campo legado 'skills_acquired'.
-                  */}
-                  {course.skills && course.skills.length > 0 ? (
-                    <p className="mt-2 text-texto-principal text-sm">
-                      <strong>Competências:</strong>{' '}
-                      {course.skills.map(s => s.skill.name).join(', ')}
-                    </p>
-                  ) : course.skills_acquired ? (
-                    <p className="mt-2 text-texto-principal text-sm">
-                      <strong>Competências:</strong> {course.skills_acquired}
-                    </p>
-                  ) : null}
-
-                  {course.url && (
-                    <Link href={course.url} target="_blank" rel="noopener noreferrer"
-                      className="text-sm font-medium text-[color:var(--acento-verde)] hover:underline">
-                      Ver Certificado &rarr;
-                    </Link>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
+          {/* Injeção de Componentes de Lista
+              Cada componente é responsável por sua própria lógica de renderização (Map)
+              e tipagem estrita baseada nos modelos do Prisma.
+          */}
+          
+          <EducationList education={education} />
+          
+          <LanguageList languages={languages} />
+          
+          <ExperienceList experiences={experiences} />
+          
+          <SkillList skillsByCategory={skillsByCategory} />
+          
+          <CourseList courses={courses} />
 
         </main>
       </div>
