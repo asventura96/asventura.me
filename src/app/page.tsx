@@ -31,7 +31,7 @@ export default async function Home() {
   const { profile, skillsByCategory, experiences, education, courses, languages } = data;
 
   return (
-    <div className="min-h-screen bg-[var(--branco)] pb-16 text-[var(--background)]">
+    <div className="flex flex-col flex-grow bg-[var(--branco)] text-[var(--background)]">
       
       {/* 1. HERO SECTION */}
       <Hero profile={profile} />
