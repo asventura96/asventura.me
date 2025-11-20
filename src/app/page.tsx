@@ -7,7 +7,6 @@ import { EducationList } from '@/components/resume/EducationList';
 import { LanguageList } from '@/components/resume/LanguageList';
 import { SkillList } from '@/components/resume/SkillList';
 import { CourseList } from '@/components/resume/CourseList';
-// Importamos ícones para padronizar os títulos das seções de texto
 import { User, Target, Github, Linkedin, Mail, Download, Code2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -56,13 +55,14 @@ export default async function Home() {
                   </h3>
                 </div>
 
-                <p className="text-[var(--background)] leading-relaxed text-lg font-medium opacity-90 text-justify">
+                {/* === RESUMO PROFISSIONAL === */}
+                <p className="text-[var(--background)] leading-relaxed text-base font-normal opacity-90 text-justify whitespace-pre-line">
                   {profile.personal_summary}
                 </p>
               </section>
             )}
 
-            {/* === OBJETIVOS === */}
+            {/* === OBJETIVOS PROFISSIONAIS === */}
             {profile.professional_objectives && (
               <section>
                 <div className="flex items-center gap-4 mb-6">
@@ -74,16 +74,16 @@ export default async function Home() {
                   </h3>
                 </div>
 
-                <p className="text-[var(--background)] leading-relaxed text-lg font-medium opacity-90 text-justify">
+                <p className="text-[var(--background)] leading-relaxed text-base font-normal opacity-90 text-justify whitespace-pre-line">
                   {profile.professional_objectives}
                 </p>
               </section>
             )}
 
-            {/* Educação */}
-               <EducationList education={education} />
+            {/* === FORMAÇÃO ACADÊMICA === */}
+             <EducationList education={education} />
 
-            {/* Timeline de Experiência */}
+            {/* === EXPERIÊNCIA PROFISSIONAL === */}
             <ExperienceTimeline experiences={experiences} />
 
           </div>
@@ -91,12 +91,12 @@ export default async function Home() {
           {/* COLUNA DIREITA (Lateral - 4 colunas) */}
           <aside className="lg:col-span-4 space-y-8">
             
-            {/* Skills */}
+            {/* === HABILIDADES === */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-[var(--texto-secundario)]/20">
               <SkillList skillsByCategory={skillsByCategory} />
             </div>
 
-            {/* Idiomas e Cursos */}
+            {/* === IDIOMAS E CURSOS === */}
             <div className="space-y-8">
                <LanguageList languages={languages} />
                <CourseList courses={courses} />
@@ -107,7 +107,7 @@ export default async function Home() {
         </div>
       </main>
 
-      {/* 3. RODAPÉ CRIATIVO & MODERNO */}
+      {/* 3. === RODAPÉ === */}
       <footer className="bg-[var(--background)] text-[var(--branco)] border-t border-[var(--texto-secundario)]/20 mt-20 print:hidden">
         <div className="max-w-6xl mx-auto px-6 py-16 lg:px-12">
           
