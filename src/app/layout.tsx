@@ -1,4 +1,4 @@
-// src/app/layout.tsx (Corrigido com as tuas fontes e FontAwesome)
+// src/app/layout.tsx
 
 import type { Metadata } from "next";
 // 1. Importa as tuas fontes (Fredoka e Concert One)
@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR" className="dark h-full">
 
       {/* 3. Adicionamos o <head> para incluir o FontAwesome */}
       <head>
@@ -47,10 +47,13 @@ export default function RootLayout({
       </head>
 
       {/* 4. Aplica as variáveis das tuas fontes ao body */}
+      {/* CORREÇÃO AQUI: Adicionei 'min-h-screen flex flex-col' */}
       <body 
-        className={`${fredoka.variable} ${concertOne.variable} bg-fundo-dark text-texto-principal antialiased`}
+        className={`${fredoka.variable} ${concertOne.variable} bg-fundo-dark text-texto-principal antialiased min-h-screen flex flex-col`}
       >
+        {/* O children (sua page.tsx) agora vai ocupar o espaço flexível corretamente */}
         {children}
+        
         <Analytics />
         <SpeedInsights />
       </body>
