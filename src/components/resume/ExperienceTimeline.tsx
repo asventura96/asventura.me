@@ -2,7 +2,6 @@
 
 /**
  * @description Componente visual de linha do tempo para exibir experiências profissionais.
- * Implementa ordenação automática (cargos atuais no topo) e expansão interativa (Accordion).
  * @author André Ventura
  */
 
@@ -27,8 +26,6 @@ interface TimelineProps {
 
 /**
  * Formata uma data para o padrão "MMM. YYYY" (pt-BR).
- * Retorna a string original caso a conversão falhe, garantindo tolerância a erros.
- * * @param dateValue - String, Date ou null vindo do banco de dados
  */
 const formatDate = (dateValue: string | Date | null | undefined): string => {
   if (!dateValue) return '';
@@ -41,34 +38,20 @@ const formatDate = (dateValue: string | Date | null | undefined): string => {
   }
 };
 
-/**
- * Componente principal da Linha do Tempo.
- */
 export function ExperienceTimeline({ experiences }: TimelineProps) {
   
-  /**
-   * Memoriza e ordena as experiências para evitar re-renderizações desnecessárias.
-   * Lógica:
-   * 1. Cargos atuais (sem data fim) aparecem primeiro.
-   * 2. Demais cargos ordenados por data de fim decrescente (mais recente primeiro).
-   */
   const sortedExperiences = useMemo(() => {
     return [...experiences].sort((a, b) => {
-      // Se 'a' é atual e 'b' não é, 'a' vem primeiro
       if (!a.end_date && b.end_date) return -1;
-      // Se 'b' é atual e 'a' não é, 'b' vem primeiro
       if (a.end_date && !b.end_date) return 1;
-      // Se ambos são atuais, mantém a ordem (ou poderia ordenar por início)
       if (!a.end_date && !b.end_date) return 0;
       
-      // Ambos finalizados: ordena do mais recente para o mais antigo
       const dateA = new Date(a.end_date!).getTime();
       const dateB = new Date(b.end_date!).getTime();
       return dateB - dateA;
     });
   }, [experiences]);
 
-  // Estado para controlar qual item está expandido (inicia com o mais recente)
   const [expandedId, setExpandedId] = useState<number | null>(sortedExperiences[0]?.id || null);
 
   const toggleExpand = (id: number) => {
@@ -77,7 +60,7 @@ export function ExperienceTimeline({ experiences }: TimelineProps) {
 
   return (
     <section className="relative space-y-8">
-      {/* Cabeçalho da Seção: Ícone e Título na cor da marca (#023047) */}
+      {/* Cabeçalho da Seção */}
       <div className="flex items-center gap-4 mb-10">
         <div className="p-3 rounded-xl bg-[var(--texto-secundario)]/20 text-[var(--background)] border border-[var(--background)]/10">
           <Briefcase size={24} strokeWidth={1.5} />
@@ -87,7 +70,7 @@ export function ExperienceTimeline({ experiences }: TimelineProps) {
         </h3>
       </div>
 
-      {/* Linha Vertical Conectora: Roxo suave (#5D3FD3) */}
+      {/* Linha Vertical Conectora */}
       <div className="absolute left-[19px] top-24 bottom-4 w-[2px] bg-[var(--acento-roxo)]/20 hidden md:block"></div>
 
       <div className="space-y-8">
@@ -101,11 +84,11 @@ export function ExperienceTimeline({ experiences }: TimelineProps) {
               <div className={`
                 absolute left-[14px] top-6 w-3 h-3 rounded-full border-[3px] z-10 hidden md:block transition-all duration-300
                 ${isExpanded 
-                  ? 'border-white bg-[var(--acento-laranja)] scale-125 shadow-md' // Ativo: Laranja (#FF8D37)
-                  : 'border-white bg-[var(--acento-roxo)] group-hover:bg-[var(--acento-roxo)]'} // Inativo: Roxo (#5D3FD3)
+                  ? 'border-white bg-[var(--acento-laranja)] scale-125 shadow-md' 
+                  : 'border-white bg-[var(--acento-roxo)] group-hover:bg-[var(--acento-roxo)]'}
               `}></div>
 
-              {/* Card de Experiência */}
+              {/* Card Interativo */}
               <div 
                 className={`
                   relative bg-white rounded-2xl transition-all duration-300 cursor-pointer overflow-hidden group border
@@ -117,49 +100,55 @@ export function ExperienceTimeline({ experiences }: TimelineProps) {
                 role="button"
                 aria-expanded={isExpanded}
               >
-                {/* Cabeçalho do Card (Sempre visível) */}
-                <div className="p-6 flex flex-col md:flex-row gap-4 justify-between relative z-10">
+                {/* LAYOUT DO CABEÇALHO */}
+                <div className="p-6 flex flex-col md:flex-row gap-4 justify-between items-start relative z-10">
                   
-                  <div className="space-y-1">
-                    {/* Cargo: Azul Escuro se ativo, Azul Escuro se inativo */}
+                  {/* Coluna Esquerda: Info Principal */}
+                  <div className="space-y-1 flex-1">
                     <h4 className={`text-lg font-medium transition-colors ${isExpanded ? 'text-[var(--background)]' : 'text-[var(--background)]'}`}>
                       {exp.role}
                     </h4>
-                    {/* Empresa: Roxo para destaque */}
                     <div className="text-base font-medium text-[var(--acento-roxo)]">
                       {exp.company}
                     </div>
                   </div>
 
-                  <div className="flex flex-col md:items-end justify-center gap-2 text-sm mt-2 md:mt-0 pr-8 md:pr-0">
-                    {/* Badge de Data: Fundo Claro (#D4F0FC) com Texto Escuro (#023047) */}
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--foreground)] border border-[var(--texto-secundario)]/50 text-[var(--background)]">
-                      <Calendar size={14} className="text-[var(--acento-roxo)]" />
-                      <span className="font-medium text-[var(--background)]">
-                        {formatDate(exp.start_date)} 
-                        {' — '}
-                        {exp.end_date ? formatDate(exp.end_date) : 'Atualmente'}
-                      </span>
-                    </div>
+                  {/* Coluna Direita: Grupo de Dados + Seta */}
+                  <div className="flex items-start gap-4 w-full md:w-auto justify-between md:justify-end">
                     
-                    {exp.location && (
-                      <div className="flex items-center gap-1.5 px-1 text-[var(--background)]/70 font-medium">
-                        <MapPin size={14} className="text-[var(--acento-laranja)]" />
-                        <span>{exp.location}</span>
+                    {/* Bloco de Data e Local */}
+                    <div className="flex flex-col md:items-end gap-2 text-sm">
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--foreground)] border border-[var(--texto-secundario)]/50 text-[var(--background)] whitespace-nowrap">
+                        <Calendar size={14} className="text-[var(--acento-roxo)]" />
+                        <span className="font-medium text-[var(--background)]">
+                          {formatDate(exp.start_date)} 
+                          {' — '}
+                          {exp.end_date ? formatDate(exp.end_date) : 'Atualmente'}
+                        </span>
                       </div>
-                    )}
-                  </div>
+                      
+                      {exp.location && (
+                        <div className="flex items-center gap-1.5 px-1 text-[var(--background)]/70 font-medium">
+                          <MapPin size={14} className="text-[var(--acento-laranja)]" />
+                          <span>{exp.location}</span>
+                        </div>
+                      )}
+                    </div>
 
-                  {/* Ícone de Expansão (Seta) */}
-                  <div className={`
-                    absolute top-6 right-6 transition-transform duration-300 text-[var(--background)]/30
-                    ${isExpanded ? 'rotate-180 text-[var(--acento-laranja)]' : ''}
-                  `}>
-                    <ChevronDown size={20} />
+                    {/* SETA DESTAQUE */}
+                    <div className={`
+                      flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 border
+                      ${isExpanded 
+                        ? 'bg-[var(--acento-laranja)] border-[var(--acento-laranja)] text-white rotate-180 shadow-lg shadow-orange-200' 
+                        : 'bg-transparent border-[var(--texto-secundario)]/30 text-[var(--texto-secundario)] group-hover:border-[var(--acento-roxo)] group-hover:text-[var(--acento-roxo)]'}
+                    `}>
+                      <ChevronDown size={18} strokeWidth={2.5} />
+                    </div>
+
                   </div>
                 </div>
 
-                {/* Conteúdo Expansível (Descrição) */}
+                {/* Conteúdo Expansível */}
                 <div 
                   className={`
                     transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden bg-[var(--foreground)]/30
@@ -168,7 +157,7 @@ export function ExperienceTimeline({ experiences }: TimelineProps) {
                 >
                   <div className="px-6 pb-8 pt-4">
                     <div className="h-px w-full bg-[var(--texto-secundario)]/30 mb-6"></div>
-                    <p className="text-[var(--background)] leading-7 whitespace-pre-line text-[15px] font-normal opacity-90">
+                    <p className="text-[var(--background)] leading-7 whitespace-pre-line text-[15px] font-normal opacity-90 text-justify">
                       {exp.description}
                     </p>
                   </div>
