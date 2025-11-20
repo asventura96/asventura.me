@@ -1,98 +1,119 @@
-/**
- * @file src/app/page.tsx
- * @description Controlador principal da aplicação (Root Page).
- * Responsável pela orquestração de dados do servidor e composição da View.
- * * ARQUITETURA: Server Component (RSC)
- * - Data Fetching ocorre no servidor (Node.js runtime).
- * - HTML pré-renderizado é enviado ao cliente.
- * - Zero bundle size de JavaScript para a lógica de busca.
- */
+// src/app/page.tsx
 
 import { getResumeData } from '@/services/resumeService';
-import { SectionTitle } from '@/components/ui/SectionTitle';
-import { ResumeSidebar } from '@/components/resume/ResumeSidebar';
+import { Hero } from '@/components/resume/Hero';
+import { ExperienceTimeline } from '@/components/resume/ExperienceTimeline';
 import { EducationList } from '@/components/resume/EducationList';
 import { LanguageList } from '@/components/resume/LanguageList';
-import { ExperienceList } from '@/components/resume/ExperienceList';
 import { SkillList } from '@/components/resume/SkillList';
 import { CourseList } from '@/components/resume/CourseList';
+// Importamos ícones para padronizar os títulos das seções de texto
+import { User, Target } from 'lucide-react';
 
-/**
- * Componente Raiz assíncrono.
- * Next.js 13+ App Router permite async/await diretamente no componente.
- */
 export default async function Home() {
   
-  // 1. Camada de Serviço: Execução de queries otimizadas (Promise.all)
   const data = await getResumeData();
 
-  // 2. Fail-Safe Strategy:
-  // Interrompe o fluxo de renderização caso o serviço de banco de dados esteja indisponível
-  // ou o perfil principal (ID 1) não exista, prevenindo Runtime Errors nos componentes filhos.
   if (!data || !data.profile) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <main className="w-full max-w-3xl p-8 border border-red-200 rounded bg-red-50">
-          <h1 className="text-3xl font-bold text-red-600 mb-2">Erro Crítico de Carregamento</h1>
-          <p className="text-red-800">
-            Não foi possível recuperar os dados do perfil. Verifique a conexão com o banco de dados.
+      <div className="flex min-h-screen items-center justify-center bg-[var(--branco)]">
+        <main className="w-full max-w-md p-6 border-l-4 border-[var(--acento-laranja)] bg-white shadow-lg rounded-r">
+          <h1 className="text-xl font-bold text-[var(--background)] mb-2">Erro de Carregamento</h1>
+          <p className="text-[var(--background)]/70 text-sm">
+            Não foi possível recuperar os dados do perfil.
           </p>
         </main>
       </div>
     );
   }
 
-  // Desestruturação para injeção de dependências nos componentes
   const { profile, skillsByCategory, experiences, education, courses, languages } = data;
 
   return (
-    <div className="max-w-6xl mx-auto p-8 md:p-12 lg:p-16">
-      {/* Layout Grid: Sidebar Fixa (1/3) + Conteúdo (2/3) em Desktop */}
-      <div className="lg:grid lg:grid-cols-3 lg:gap-16">
+    <div className="min-h-screen bg-[var(--branco)] pb-16 text-[var(--background)]">
+      
+      {/* 1. HERO SECTION */}
+      <Hero profile={profile} />
 
-        {/* --- COMPONENTE: Sidebar (Identidade Visual e Contatos) --- */}
-        <ResumeSidebar profile={profile} />
+      {/* 2. CONTEÚDO PRINCIPAL */}
+      <main className="max-w-6xl mx-auto px-4 py-12 md:px-8 lg:px-12">
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
 
-        {/* --- ÁREA PRINCIPAL: Detalhamento do Currículo --- */}
-        <main className="lg:col-span-2 mt-12 lg:mt-0">
-          
-          {/* Seção Condicional: Sobre Mim */}
-          {profile.personal_summary && (
-            <section className="mb-12">
-              <SectionTitle title="Sobre Mim" />
-              <p className="text-texto-principal whitespace-pre-line leading-relaxed">
-                {profile.personal_summary}
-              </p>
-            </section>
-          )}
+          {/* COLUNA ESQUERDA (Principal - 8 colunas) */}
+          <div className="lg:col-span-8 space-y-16">
+            
+            {/* === RESUMO PROFISSIONAL === */}
+            {profile.personal_summary && (
+              <section>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 rounded-xl bg-[var(--texto-secundario)]/20 text-[var(--background)] border border-[var(--background)]/10">
+                    <User size={24} strokeWidth={1.5} />
+                  </div>
+                  <h3 className="text-2xl font-bold text-[var(--background)] tracking-tight">
+                    Resumo Profissional
+                  </h3>
+                </div>
 
-          {/* Seção Condicional: Objetivos */}
-          {profile.professional_objectives && (
-            <section className="mb-12">
-              <SectionTitle title="Objetivos Profissionais" />
-              <p className="text-texto-principal whitespace-pre-line leading-relaxed">
-                {profile.professional_objectives}
-              </p>
-            </section>
-          )}
+                <p className="text-[var(--background)] leading-relaxed text-lg font-medium opacity-90 text-justify">
+                  {profile.personal_summary}
+                </p>
+              </section>
+            )}
 
-          {/* Injeção de Componentes de Lista
-              Cada componente é responsável por sua própria lógica de renderização (Map)
-              e tipagem estrita baseada nos modelos do Prisma.
-          */}
-          
-          <EducationList education={education} />
-          
-          <LanguageList languages={languages} />
-          
-          <ExperienceList experiences={experiences} />
-          
-          <SkillList skillsByCategory={skillsByCategory} />
-          
-          <CourseList courses={courses} />
+            {/* === OBJETIVOS === 
+               Visual corrigido: Agora sem card, seguindo o padrão "clean" do Resumo.
+            */}
+            {profile.professional_objectives && (
+              <section>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 rounded-xl bg-[var(--texto-secundario)]/20 text-[var(--background)] border border-[var(--background)]/10">
+                    <Target size={24} strokeWidth={1.5} />
+                  </div>
+                  <h3 className="text-2xl font-bold text-[var(--background)] tracking-tight">
+                    Objetivos Profissionais
+                  </h3>
+                </div>
 
-        </main>
-      </div>
+                <p className="text-[var(--background)] leading-relaxed text-lg font-medium opacity-90 text-justify">
+                  {profile.professional_objectives}
+                </p>
+              </section>
+            )}
+
+            {/* Timeline de Experiência */}
+            <ExperienceTimeline experiences={experiences} />
+
+          </div>
+
+          {/* COLUNA DIREITA (Lateral - 4 colunas) */}
+          <aside className="lg:col-span-4 space-y-8">
+            
+            {/* Skills */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-[var(--texto-secundario)]/20">
+              <SkillList skillsByCategory={skillsByCategory} />
+            </div>
+
+            {/* Educação */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-[var(--texto-secundario)]/20">
+               <EducationList education={education} />
+            </div>
+
+            {/* Idiomas e Cursos */}
+            <div className="space-y-8">
+               <LanguageList languages={languages} />
+               <CourseList courses={courses} />
+            </div>
+
+          </aside>
+
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-[var(--background)] text-[var(--foreground)] py-12 text-center text-sm mt-12 border-t border-[var(--texto-secundario)]/10">
+        <p>&copy; {new Date().getFullYear()} {profile.name}. Desenvolvido com Next.js & Prisma.</p>
+      </footer>
     </div>
   );
 }
