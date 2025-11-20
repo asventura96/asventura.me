@@ -1,29 +1,24 @@
 // src/components/resume/CourseList.tsx
 
-import Link from 'next/link';
-import { SectionTitle } from '../ui/SectionTitle';
 /**
- * CORREÇÃO CRÍTICA:
- * O erro do terminal confirmou que o modelo no Prisma se chama 'Course' (Maiúsculo).
- * Diferente do 'profile' (minúsculo). A importação exata resolve a herança de tipos.
+ * @file src/components/resume/CourseList.tsx
+ * @description Componente para listar cursos complementares e certificações.
+ * Layout ajustado para lista vertical (um abaixo do outro) para melhor legibilidade.
+ * @author André Ventura
  */
+
+import Link from 'next/link';
+import { Award, Calendar, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { Course } from '@prisma/client';
 
 // === Definições de Tipos ===
 
-/**
- * Define a estrutura da relação 'skills' carregada via 'include' no Prisma.
- */
 type CourseSkillRelation = {
   skill: {
     name: string;
   };
 };
 
-/**
- * Extensão do tipo base 'Course' (do Prisma) para suportar o relacionamento de skills.
- * Ao estender 'Course' corretamente, as propriedades id, name, institution, etc., são herdadas.
- */
 interface CourseWithRelations extends Course {
   skills?: CourseSkillRelation[];
 }
@@ -32,53 +27,92 @@ interface CourseListProps {
   courses: CourseWithRelations[];
 }
 
-/**
- * Componente: CourseList
- * ----------------------------------------------------------------------
- * Renderiza a lista de certificações.
- * Mantém a compatibilidade entre a nova estrutura relacional (skills) e a estrutura legada.
- * * @param {CourseListProps} props - Lista de cursos tipada com CourseWithRelations.
- */
 export function CourseList({ courses }: CourseListProps) {
   return (
     <section className="mb-12">
-      <SectionTitle title="Cursos e Certificações" />
+      {/* Cabeçalho com Ícone e Cor da Marca */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 rounded-lg bg-[var(--texto-secundario)]/10 text-[var(--background)]">
+          <Award size={20} />
+        </div>
+        <h3 className="text-xl font-bold text-[var(--background)]">Cursos e Certificações</h3>
+      </div>
       
-      <div className="space-y-6">
+      {/* Layout alterado de Grid para Flex Column (Vertical) */}
+      <div className="flex flex-col gap-4">
         {courses.map((course) => (
-          <div key={course.id} className="pl-4 border-l-2 border-[color:var(--acento-laranja)]">
-            
-            {/* As propriedades abaixo agora serão reconhecidas porque 'Course' foi importado corretamente */}
-            <h3 className="text-lg text-texto-principal">{course.name}</h3>
-            <p className="font-medium text-texto-secundario">{course.institution}</p>
-            
-            <p className="text-sm text-texto-secundario opacity-80">
-              {course.type} · {course.date} {course.workload ? `(${course.workload} horas)` : ''}
-            </p>
-            
-            {/* Renderização condicional de Skills (Relacional vs Legado) */}
-            {course.skills && course.skills.length > 0 ? (
-              <p className="mt-2 text-texto-principal text-sm">
-                <strong>Competências:</strong>{' '}
-                {course.skills.map((s) => s.skill.name).join(', ')}
-              </p>
-            ) : course.skills_acquired ? (
-              <p className="mt-2 text-texto-principal text-sm">
-                <strong>Competências:</strong> {course.skills_acquired}
-              </p>
-            ) : null}
+          <div 
+            key={course.id} 
+            className="group relative bg-white p-4 rounded-xl border border-[var(--texto-secundario)]/20 hover:border-[var(--acento-laranja)]/50 transition-all duration-300 shadow-sm hover:shadow-md"
+          >
+            <div className="flex justify-between items-start gap-2">
+              <div className="flex-1">
+                {/* Nome do Curso */}
+                <h3 className="text-base font-bold text-[var(--background)] leading-tight group-hover:text-[var(--acento-laranja)] transition-colors">
+                  {course.name}
+                </h3>
+                
+                {/* Instituição */}
+                <p className="text-sm font-bold text-[var(--acento-roxo)] mt-1">
+                  {course.institution}
+                </p>
+                
+                {/* Detalhes: Data, Carga Horária e Tipo */}
+                <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--background)]/70 mt-2">
+                  <div className="flex items-center gap-1">
+                    <Calendar size={12} />
+                    <span>{course.date}</span>
+                  </div>
+                  
+                  {course.workload && (
+                    <>
+                      <span className="text-[var(--texto-secundario)]">•</span>
+                      <span>{course.workload}h</span>
+                    </>
+                  )}
+                  
+                  {course.type && (
+                     <>
+                      <span className="text-[var(--texto-secundario)]">•</span>
+                      <span className="uppercase text-[10px] tracking-wider font-semibold border border-[var(--texto-secundario)]/30 px-1.5 rounded-sm">
+                        {course.type}
+                      </span>
+                     </>
+                  )}
+                </div>
 
-            {course.url && (
-              <Link 
-                href={course.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-sm font-medium text-[color:var(--acento-verde)] hover:underline block mt-1"
-              >
-                Ver Certificado &rarr;
-              </Link>
-            )}
-            
+                {/* Lista de Competências (Skills) */}
+                <div className="mt-3 pt-3 border-t border-[var(--texto-secundario)]/10">
+                  {course.skills && course.skills.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {course.skills.map((s, idx) => (
+                        <span key={idx} className="text-[10px] px-2 py-0.5 rounded bg-[var(--foreground)] text-[var(--background)] font-medium border border-[var(--texto-secundario)]/20">
+                          {s.skill.name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : course.skills_acquired ? (
+                     <p className="text-xs text-[var(--background)]/80 italic flex items-center gap-1">
+                       <CheckCircle2 size={10} className="text-[var(--acento-verde)]"/>
+                       {course.skills_acquired}
+                     </p>
+                  ) : null}
+                </div>
+              </div>
+
+              {/* Link do Certificado (Canto superior direito) */}
+              {course.url && (
+                <Link 
+                  href={course.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[var(--texto-secundario)] hover:text-[var(--acento-verde)] p-1 hover:bg-[var(--texto-secundario)]/10 rounded-lg transition-all"
+                  title="Ver Certificado"
+                >
+                  <ExternalLink size={18} />
+                </Link>
+              )}
+            </div>
           </div>
         ))}
       </div>
