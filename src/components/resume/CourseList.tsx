@@ -35,7 +35,7 @@ export function CourseList({ courses }: CourseListProps) {
         <div className="p-2 rounded-lg bg-[var(--texto-secundario)]/10 text-[var(--background)]">
           <Award size={20} />
         </div>
-        <h3 className="text-xl font-bold text-[var(--background)]">Cursos e Certificações</h3>
+        <h3 className="text-xl font-medium text-[var(--background)]">Cursos e Certificações</h3>
       </div>
       
       {/* Layout alterado de Grid para Flex Column (Vertical) */}
@@ -48,19 +48,19 @@ export function CourseList({ courses }: CourseListProps) {
             <div className="flex justify-between items-start gap-2">
               <div className="flex-1">
                 {/* Nome do Curso */}
-                <h3 className="text-base font-bold text-[var(--background)] leading-tight group-hover:text-[var(--acento-laranja)] transition-colors">
+                <h3 className="text-base font-medium text-[var(--background)] leading-tight group-hover:text-[var(--acento-laranja)] transition-colors">
                   {course.name}
                 </h3>
                 
                 {/* Instituição */}
-                <p className="text-sm font-bold text-[var(--acento-roxo)] mt-1">
+                <p className="text-sm font-medium text-[var(--acento-roxo)] mt-1">
                   {course.institution}
                 </p>
                 
                 {/* Detalhes: Data, Carga Horária e Tipo */}
                 <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--background)]/70 mt-2">
                   <div className="flex items-center gap-1">
-                    <Calendar size={12} />
+                    <Calendar size={12} className="text-[var(--acento-laranja)]" />
                     <span>{course.date}</span>
                   </div>
                   
@@ -74,7 +74,7 @@ export function CourseList({ courses }: CourseListProps) {
                   {course.type && (
                      <>
                       <span className="text-[var(--texto-secundario)]">•</span>
-                      <span className="uppercase text-[10px] tracking-wider font-semibold border border-[var(--texto-secundario)]/30 px-1.5 rounded-sm">
+                      <span className="uppercase text-[10px] tracking-wider font-semibold px-3 py-1 border border-[var(--acento-roxo)]/30 px-1.5 rounded-sm text-[var(--background)]">
                         {course.type}
                       </span>
                      </>
