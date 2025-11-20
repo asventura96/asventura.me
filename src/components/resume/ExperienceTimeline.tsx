@@ -82,7 +82,7 @@ export function ExperienceTimeline({ experiences }: TimelineProps) {
         <div className="p-3 rounded-xl bg-[var(--texto-secundario)]/20 text-[var(--background)] border border-[var(--background)]/10">
           <Briefcase size={24} strokeWidth={1.5} />
         </div>
-        <h3 className="text-2xl font-bold text-[var(--background)] tracking-tight">
+        <h3 className="text-2xl font-medium text-[var(--background)] tracking-tight">
           Experiência Profissional
         </h3>
       </div>
@@ -122,11 +122,11 @@ export function ExperienceTimeline({ experiences }: TimelineProps) {
                   
                   <div className="space-y-1">
                     {/* Cargo: Azul Escuro se ativo, Azul Escuro se inativo */}
-                    <h4 className={`text-lg font-bold transition-colors ${isExpanded ? 'text-[var(--background)]' : 'text-[var(--background)]'}`}>
+                    <h4 className={`text-lg font-medium transition-colors ${isExpanded ? 'text-[var(--background)]' : 'text-[var(--background)]'}`}>
                       {exp.role}
                     </h4>
                     {/* Empresa: Roxo para destaque */}
-                    <div className="text-base font-bold text-[var(--acento-roxo)]">
+                    <div className="text-base font-medium text-[var(--acento-roxo)]">
                       {exp.company}
                     </div>
                   </div>
@@ -135,7 +135,7 @@ export function ExperienceTimeline({ experiences }: TimelineProps) {
                     {/* Badge de Data: Fundo Claro (#D4F0FC) com Texto Escuro (#023047) */}
                     <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--foreground)] border border-[var(--texto-secundario)]/50 text-[var(--background)]">
                       <Calendar size={14} className="text-[var(--acento-roxo)]" />
-                      <span className="font-bold text-[var(--background)]">
+                      <span className="font-medium text-[var(--background)]">
                         {formatDate(exp.start_date)} 
                         {' — '}
                         {exp.end_date ? formatDate(exp.end_date) : 'Atualmente'}
@@ -168,7 +168,7 @@ export function ExperienceTimeline({ experiences }: TimelineProps) {
                 >
                   <div className="px-6 pb-8 pt-4">
                     <div className="h-px w-full bg-[var(--texto-secundario)]/30 mb-6"></div>
-                    <p className="text-[var(--background)] leading-7 whitespace-pre-line text-[15px] font-medium opacity-90">
+                    <p className="text-[var(--background)] leading-7 whitespace-pre-line text-[15px] font-normal opacity-90">
                       {exp.description}
                     </p>
                   </div>
