@@ -151,7 +151,7 @@ export default async function Home() {
                  </p>
                  <div className="flex items-center gap-3 bg-[var(--foreground)]/5 px-4 py-2 rounded-lg border border-[var(--texto-secundario)]/20">
                     <Code2 size={18} className="text-[var(--acento-roxo)]" />
-                    <span className="font-mono text-sm">Next.js 14 + Tailwind + Prisma</span>
+                    <span className="font-mono text-sm">Next.js + Tailwind + Prisma</span>
                  </div>
               </div>
 
