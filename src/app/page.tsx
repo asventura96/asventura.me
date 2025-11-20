@@ -8,7 +8,8 @@ import { LanguageList } from '@/components/resume/LanguageList';
 import { SkillList } from '@/components/resume/SkillList';
 import { CourseList } from '@/components/resume/CourseList';
 // Importamos ícones para padronizar os títulos das seções de texto
-import { User, Target } from 'lucide-react';
+import { User, Target, Github, Linkedin, Mail, Download, Code2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function Home() {
   
@@ -50,7 +51,7 @@ export default async function Home() {
                   <div className="p-3 rounded-xl bg-[var(--texto-secundario)]/20 text-[var(--background)] border border-[var(--background)]/10">
                     <User size={24} strokeWidth={1.5} />
                   </div>
-                  <h3 className="text-2xl font-bold text-[var(--background)] tracking-tight">
+                  <h3 className="text-2xl font-medium text-[var(--background)] tracking-tight">
                     Resumo Profissional
                   </h3>
                 </div>
@@ -61,16 +62,14 @@ export default async function Home() {
               </section>
             )}
 
-            {/* === OBJETIVOS === 
-               Visual corrigido: Agora sem card, seguindo o padrão "clean" do Resumo.
-            */}
+            {/* === OBJETIVOS === */}
             {profile.professional_objectives && (
               <section>
                 <div className="flex items-center gap-4 mb-6">
                   <div className="p-3 rounded-xl bg-[var(--texto-secundario)]/20 text-[var(--background)] border border-[var(--background)]/10">
                     <Target size={24} strokeWidth={1.5} />
                   </div>
-                  <h3 className="text-2xl font-bold text-[var(--background)] tracking-tight">
+                  <h3 className="text-2xl font-medium text-[var(--background)] tracking-tight">
                     Objetivos Profissionais
                   </h3>
                 </div>
@@ -108,9 +107,79 @@ export default async function Home() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-[var(--background)] text-[var(--foreground)] py-12 text-center text-sm mt-12 border-t border-[var(--texto-secundario)]/10">
-        <p>&copy; {new Date().getFullYear()} {profile.name}. Desenvolvido com Next.js & Prisma.</p>
+      {/* 3. RODAPÉ CRIATIVO & MODERNO */}
+      <footer className="bg-[var(--background)] text-[var(--branco)] border-t border-[var(--texto-secundario)]/20 mt-20 print:hidden">
+        <div className="max-w-6xl mx-auto px-6 py-16 lg:px-12">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            
+            {/* Bloco da Esquerda: Identidade */}
+            <div className="space-y-4 text-center md:text-left">
+              <h2 className="text-2xl font-bold tracking-wider uppercase text-[var(--acento-verde)]">
+                {profile.name}
+              </h2>
+              <p className="text-[var(--texto-secundario)] max-w-sm mx-auto md:mx-0">
+                Engenharia de Computação & Desenvolvimento de Software. 
+                Transformando ideias em código limpo e escalável.
+              </p>
+              
+              {/* Ícones Sociais */}
+              <div className="flex gap-4 justify-center md:justify-start pt-2">
+                {profile.linkedin_url && (
+                  <Link href={profile.linkedin_url} target="_blank" className="p-2 bg-[var(--texto-secundario)]/10 rounded-full hover:bg-[var(--acento-verde)] hover:text-[var(--background)] transition-all">
+                    <Linkedin size={20} />
+                  </Link>
+                )}
+                {profile.github_url && (
+                  <Link href={profile.github_url} target="_blank" className="p-2 bg-[var(--texto-secundario)]/10 rounded-full hover:bg-[var(--acento-verde)] hover:text-[var(--background)] transition-all">
+                    <Github size={20} />
+                  </Link>
+                )}
+                {profile.email && (
+                  <Link href={`mailto:${profile.email}`} className="p-2 bg-[var(--texto-secundario)]/10 rounded-full hover:bg-[var(--acento-verde)] hover:text-[var(--background)] transition-all">
+                    <Mail size={20} />
+                  </Link>
+                )}
+              </div>
+            </div>
+
+            {/* Bloco da Direita: Call to Action / Stack */}
+            <div className="flex flex-col items-center md:items-end space-y-6">
+              <div className="text-center md:text-right">
+                 <p className="text-sm font-medium text-[var(--texto-secundario)] uppercase tracking-widest mb-2">
+                   Tech Stack deste Portfólio
+                 </p>
+                 <div className="flex items-center gap-3 bg-[var(--foreground)]/5 px-4 py-2 rounded-lg border border-[var(--texto-secundario)]/20">
+                    <Code2 size={18} className="text-[var(--acento-roxo)]" />
+                    <span className="font-mono text-sm">Next.js 14 + Tailwind + Prisma</span>
+                 </div>
+              </div>
+
+              {profile.website_url && (
+                <Link 
+                  href={profile.website_url} 
+                  target="_blank"
+                  className="group flex items-center gap-2 text-[var(--branco)] hover:text-[var(--acento-verde)] transition-colors"
+                >
+                  Baixar Currículo em PDF
+                  <Download size={16} className="group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Linha Divisória */}
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-[var(--texto-secundario)]/30 to-transparent my-8"></div>
+
+          {/* Copyright */}
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[var(--texto-secundario)]">
+            <p>&copy; {new Date().getFullYear()} {profile.name}. Todos os direitos reservados.</p>
+            <p className="flex items-center gap-1">
+              Feito em Belo Horizonte <span className="text-[var(--acento-laranja)]">Minas Gerais</span>
+            </p>
+          </div>
+
+        </div>
       </footer>
     </div>
   );
