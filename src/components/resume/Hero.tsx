@@ -170,9 +170,10 @@ export function Hero({ profile }: HeroProps) {
                 href={profile.github_url}
                 target="_blank"
                 rel="noreferrer"
-                className="p-3 bg-transparent border border-[var(--texto-secundario)] text-[var(--texto-secundario)] hover:bg-[var(--texto-secundario)]/10 rounded-lg transition-all hover:text-white"
+                className="flex items-center gap-2 px-6 py-3 bg-transparent border border-[var(--texto-secundario)] text-[var(--texto-secundario)] hover:bg-[var(--texto-secundario)]/10 rounded-lg font-medium transition-all hover:scale-105"
               >
                 <Github size={20} />
+                GitHub
               </a>
             )}
           </div>
