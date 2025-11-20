@@ -1,7 +1,6 @@
 // src/components/resume/SkillList.tsx
 
 /**
- * @file src/components/resume/SkillList.tsx
  * @description Componente que renderiza as competências técnicas em formato de Grid Interativo.
  * Implementa funcionalidade de Tooltip/Popover para exibir a descrição detalhada da skill ao clicar ou passar o mouse.
  * @author André Ventura
@@ -50,7 +49,7 @@ export function SkillList({ skillsByCategory }: SkillListProps) {
         <div className="p-2 rounded-lg bg-[var(--texto-secundario)]/10 text-[var(--background)]">
           <Code2 size={20} />
         </div>
-        <h3 className="text-xl font-bold text-[var(--background)]">Habilidades</h3>
+        <h3 className="text-xl font-medium text-[var(--background)]">Habilidades</h3>
       </div>
 
       {Object.entries(skillsByCategory).map(([category, list]) => (
@@ -61,7 +60,7 @@ export function SkillList({ skillsByCategory }: SkillListProps) {
             <span className="text-[var(--acento-roxo)]">
               {getIconForCategory(category)}
             </span>
-            <h4 className="font-bold text-sm uppercase tracking-wider opacity-80">
+            <h4 className="font-medium text-sm uppercase tracking-wider opacity-80">
               {category}
             </h4>
           </div>
@@ -78,7 +77,7 @@ export function SkillList({ skillsByCategory }: SkillListProps) {
                   <button
                     onClick={() => handleInteraction(skill.id)}
                     className={`
-                      relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border
+                      relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-normal transition-all duration-200 border
                       ${isActive 
                         ? 'bg-[var(--background)] text-[var(--branco)] border-[var(--background)] shadow-md scale-105 z-20' 
                         : 'bg-white text-[var(--background)] border-[var(--texto-secundario)]/30 hover:border-[var(--acento-laranja)] hover:text-[var(--acento-laranja)]'}
@@ -102,8 +101,8 @@ export function SkillList({ skillsByCategory }: SkillListProps) {
                         <div className="absolute -bottom-1.5 left-4 w-3 h-3 bg-[var(--background)] border-b border-r border-[var(--acento-laranja)] rotate-45"></div>
                         
                         {/* Conteúdo da Descrição */}
-                        <p className="leading-relaxed font-medium">
-                          <span className="block text-[var(--acento-laranja)] font-bold mb-1 text-[10px] uppercase tracking-widest">
+                        <p className="leading-relaxed font-normal">
+                          <span className="block text-[var(--acento-laranja)] font-medium mb-1 text-[10px] uppercase tracking-widest">
                             Detalhes
                           </span>
                           {skill.description}
