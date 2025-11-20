@@ -36,7 +36,7 @@ export function LanguageList({ languages }: LanguageListProps) {
         <div className="p-2 rounded-lg bg-[var(--texto-secundario)]/10 text-[var(--background)]">
           <Languages size={20} />
         </div>
-        <h3 className="text-xl font-bold text-[var(--background)]">Idiomas</h3>
+        <h3 className="text-xl font-medium text-[var(--background)]">Idiomas</h3>
       </div>
       
       <div className="grid grid-cols-1 gap-3">
@@ -44,12 +44,12 @@ export function LanguageList({ languages }: LanguageListProps) {
           <div key={lang.id} className="bg-white p-3 rounded-xl border border-[var(--texto-secundario)]/20 shadow-sm">
             <div className="flex justify-between items-center mb-2">
               {/* Nome do Idioma */}
-              <strong className="text-[var(--background)] font-bold">
+              <strong className="text-[var(--background)] font-medium">
                 {lang.name}
               </strong>
               
               {/* Texto do Nível */}
-              <span className="text-xs font-bold text-[var(--acento-verde)] uppercase tracking-wider">
+              <span className="text-xs font-medium text-[var(--acento-roxo)] uppercase tracking-wider">
                 {lang.level}
               </span>
             </div>
@@ -57,7 +57,7 @@ export function LanguageList({ languages }: LanguageListProps) {
             {/* Barra de Progresso Visual */}
             <div className="h-2 w-full bg-[var(--texto-secundario)]/10 rounded-full overflow-hidden">
               <div 
-                className={`h-full bg-gradient-to-r from-[var(--acento-verde)] to-[var(--acento-roxo)] rounded-full ${getLevelWidth(lang.level)}`}
+                className={`h-full bg-gradient-to-r from-[var(--acento-laranja)] to-[var(--acento-verde)] rounded-full ${getLevelWidth(lang.level)}`}
               />
             </div>
           </div> 
