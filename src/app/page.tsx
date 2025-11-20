@@ -81,6 +81,9 @@ export default async function Home() {
               </section>
             )}
 
+            {/* Educação */}
+               <EducationList education={education} />
+
             {/* Timeline de Experiência */}
             <ExperienceTimeline experiences={experiences} />
 
@@ -92,11 +95,6 @@ export default async function Home() {
             {/* Skills */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-[var(--texto-secundario)]/20">
               <SkillList skillsByCategory={skillsByCategory} />
-            </div>
-
-            {/* Educação */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-[var(--texto-secundario)]/20">
-               <EducationList education={education} />
             </div>
 
             {/* Idiomas e Cursos */}

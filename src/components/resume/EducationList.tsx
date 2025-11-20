@@ -35,16 +35,16 @@ const formatMonthYear = (dateValue: string | Date | null | undefined) => {
 
 export function EducationList({ education }: EducationListProps) {
   return (
-    <section className="space-y-6">
+    <section className="relative space-y-8">
       {/* Título da Seção */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 rounded-lg bg-[var(--texto-secundario)]/10 text-[var(--background)]">
-          <GraduationCap size={20} />
+      <div className="flex items-center gap-4 mb-10">
+        <div className="p-3 rounded-xl bg-[var(--texto-secundario)]/20 text-[var(--background)] border border-[var(--background)]/10">
+          <GraduationCap size={24} strokeWidth={1.5} />
         </div>
-        <h3 className="text-xl font-bold text-[var(--background)]">Formação Acadêmica</h3>
+        <h3 className="text-2xl font-bold text-[var(--background)] tracking-tight">Formação Acadêmica</h3>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-8">
         {education.map((edu) => (
           <div 
             key={edu.id} 
