@@ -41,7 +41,7 @@ export function EducationList({ education }: EducationListProps) {
         <div className="p-3 rounded-xl bg-[var(--texto-secundario)]/20 text-[var(--background)] border border-[var(--background)]/10">
           <GraduationCap size={24} strokeWidth={1.5} />
         </div>
-        <h3 className="text-2xl font-bold text-[var(--background)] tracking-tight">Formação Acadêmica</h3>
+        <h3 className="text-2xl font-medium text-[var(--background)] tracking-tight">Formação Acadêmica</h3>
       </div>
 
       <div className="space-y-8">
@@ -55,12 +55,12 @@ export function EducationList({ education }: EducationListProps) {
 
             <div className="pl-2 space-y-1">
               {/* Nome do Curso: Azul Escuro */}
-              <h4 className="font-bold text-[var(--background)] leading-tight text-[15px]">
+              <h4 className="text-lg font-medium transition-colors">
                 {edu.course_name}
               </h4>
               
               {/* Instituição: Roxo para destaque */}
-              <div className="text-sm font-bold text-[var(--acento-roxo)]">
+              <div className="text-base font-medium text-[var(--acento-roxo)]">
                 {edu.institution}
               </div>
 
@@ -68,18 +68,18 @@ export function EducationList({ education }: EducationListProps) {
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--background)]/70 pt-2 mt-2 border-t border-[var(--texto-secundario)]/10">
                 
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded bg-[var(--foreground)] border border-[var(--texto-secundario)]/20 font-medium">
+                  <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--foreground)] border border-[var(--texto-secundario)]/50 font-medium text-[var(--background)]">
                     {edu.level}
                   </span>
                   {edu.status && (
-                    <span className="text-[var(--acento-laranja)] font-medium">
+                    <span className="flex items-center gap-1.5 px-1 text-[var(--background)]/70 font-medium">
                       • {edu.status}
                     </span>
                   )}
                 </div>
                 
-                <div className="flex items-center gap-1 font-medium">
-                  <Calendar size={12} className="text-[var(--acento-laranja)]" />
+                <div className="flex items-center gap-1.5 px-1 text-[var(--background)]/70 font-medium">
+                  <Calendar size={14} className="text-[var(--acento-laranja)]" />
                   <span>
                     {/* Aplicação da correção de data MM/YYYY */}
                     {formatMonthYear(edu.start_date)} - {edu.end_date ? formatMonthYear(edu.end_date) : 'Atual'}
