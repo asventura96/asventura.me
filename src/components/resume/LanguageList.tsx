@@ -1,48 +1,66 @@
 // src/components/resume/LanguageList.tsx
 
-import { SectionTitle } from '../ui/SectionTitle';
+import { Languages } from 'lucide-react';
 /**
  * Importação do tipo gerado pelo Prisma.
- * Segue o padrão PascalCase ('Language') identificado nos modelos 'Course' e 'Education'.
+ * Mantida para garantir Type Safety.
  */
 import { Language } from '@prisma/client';
 
 // === Definição de Tipos ===
 
 interface LanguageListProps {
-  /**
-   * Lista de idiomas.
-   * O tipo 'Language' garante que as propriedades 'name' e 'level' (e ID)
-   * estejam estritamente tipadas conforme o schema do banco.
-   */
   languages: Language[];
 }
 
 /**
+ * Auxiliar visual: Define a largura da barra com base no texto do nível.
+ */
+const getLevelWidth = (level: string) => {
+  const normalized = level.toLowerCase();
+  if (normalized.includes('nativo') || normalized.includes('fluente')) return 'w-full';
+  if (normalized.includes('avançado')) return 'w-3/4';
+  if (normalized.includes('intermediário')) return 'w-1/2';
+  return 'w-1/3'; // Básico
+};
+
+/**
  * Componente: LanguageList
  * ----------------------------------------------------------------------
- * Renderiza a lista de proficiência em idiomas.
- * Layout compacto para fácil leitura visual.
- * * @param {LanguageListProps} props - Lista de idiomas vinda do banco.
+ * Visual modernizado com barras de proficiência.
  */
 export function LanguageList({ languages }: LanguageListProps) {
   return (
     <section className="mb-12">
-      <SectionTitle title="Idiomas" />
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 rounded-lg bg-[var(--texto-secundario)]/10 text-[var(--background)]">
+          <Languages size={20} />
+        </div>
+        <h3 className="text-xl font-bold text-[var(--background)]">Idiomas</h3>
+      </div>
       
-      <div className="space-y-2 pl-4">
+      <div className="grid grid-cols-1 gap-3">
         {languages.map((lang) => (
-          <p key={lang.id} className="text-texto-principal">
-            
-            {/* Nome do Idioma (Ex: Inglês) */}
-            <strong className="font-semibold text-texto-secundario">
-              {lang.name}:
-            </strong>{" "}
-            
-            {/* Nível de Proficiência (Ex: Avançado) */}
-            {lang.level}
-            
-          </p> 
+          <div key={lang.id} className="bg-white p-3 rounded-xl border border-[var(--texto-secundario)]/20 shadow-sm">
+            <div className="flex justify-between items-center mb-2">
+              {/* Nome do Idioma */}
+              <strong className="text-[var(--background)] font-bold">
+                {lang.name}
+              </strong>
+              
+              {/* Texto do Nível */}
+              <span className="text-xs font-bold text-[var(--acento-verde)] uppercase tracking-wider">
+                {lang.level}
+              </span>
+            </div>
+
+            {/* Barra de Progresso Visual */}
+            <div className="h-2 w-full bg-[var(--texto-secundario)]/10 rounded-full overflow-hidden">
+              <div 
+                className={`h-full bg-gradient-to-r from-[var(--acento-verde)] to-[var(--acento-roxo)] rounded-full ${getLevelWidth(lang.level)}`}
+              />
+            </div>
+          </div> 
         ))}
       </div>
     </section>
