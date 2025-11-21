@@ -1,26 +1,27 @@
 // src/app/layout.tsx
 
 import type { Metadata } from "next";
-// 1. Importa as tuas fontes (Fredoka e Concert One)
 import { Fredoka, Concert_One } from "next/font/google";
 import "./globals.css";
 
-// Importa as análises do Vercel
+// Vercel analytics
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
-// 2. Configura as fontes como variáveis CSS
+// Theme provider
+import { ThemeProvider } from "@/components/theme-provider"
+
 const fredoka = Fredoka({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-fredoka', // Apelido da fonte
+  variable: '--font-fredoka',
 });
 
 const concertOne = Concert_One({
-  weight: ['400'], // Único peso disponível
+  weight: ['400'],
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-concert-one', // Apelido da fonte
+  variable: '--font-concert-one',
 });
 
 export const metadata: Metadata = {
@@ -30,32 +31,36 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="pt-BR" className="dark h-full">
-
-      {/* 3. Adicionamos o <head> para incluir o FontAwesome */}
+    <html lang="pt-BR" suppressHydrationWarning className="h-full">
       <head>
-         <link 
-          rel="stylesheet" 
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" 
-          integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" 
-          crossOrigin="anonymous" 
-          referrerPolicy="no-referrer" />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+          integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+          crossOrigin="anonymous"
+          referrerPolicy="no-referrer"
+        />
       </head>
 
-      {/* 4. Aplica as variáveis das tuas fontes ao body */}
-      {/* CORREÇÃO AQUI: Adicionei 'min-h-screen flex flex-col' */}
-      <body 
+      <body
         className={`${fredoka.variable} ${concertOne.variable} bg-fundo-dark text-texto-principal antialiased min-h-screen flex flex-col`}
       >
-        {/* O children (sua page.tsx) agora vai ocupar o espaço flexível corretamente */}
-        {children}
-        
-        <Analytics />
-        <SpeedInsights />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+
+          {/* Vercel Analytics */}
+          <Analytics />
+          <SpeedInsights />
+        </ThemeProvider>
       </body>
     </html>
   );
