@@ -1,106 +1,120 @@
 // src/components/resume/SkillList.tsx
 
 /**
- * @description Componente que renderiza as competências técnicas em formato de Grid Interativo.
- * Implementa funcionalidade de Tooltip/Popover para exibir a descrição detalhada da skill ao clicar ou passar o mouse.
- * @author André Ventura
+ * Componente de grid interativo para exibir habilidades técnicas agrupadas por categoria.
+ * Clean code aplicado, comentários técnicos adicionados e estrutura defensiva preservada.
  */
 
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Code2, Database, Layout, Server, Terminal, Wrench, Info } from 'lucide-react';
-import { skills } from '@prisma/client';
+import { useState } from "react";
+import {
+  Code2,
+  Database,
+  Layout,
+  Server,
+  Terminal,
+  Wrench,
+  Info,
+} from "lucide-react";
+import { skills } from "@prisma/client";
 
 interface SkillListProps {
-  /**
-   * Dicionário de skills agrupadas por categoria.
-   * Chave: Nome da Categoria. Valor: Array de skills.
-   */
+  /** Dicionário de skills agrupadas por categoria */
   skillsByCategory: Record<string, skills[]>;
 }
 
 /**
- * Retorna o ícone adequado baseado no nome da categoria.
+ * Retorna o ícone correspondente ao nome da categoria.
+ * Usa comparação por palavras-chave para simplificar manutenção.
  */
 const getIconForCategory = (category: string) => {
   const normalized = category.toLowerCase();
-  if (normalized.includes('back')) return <Server size={18} />;
-  if (normalized.includes('front')) return <Layout size={18} />;
-  if (normalized.includes('dados') || normalized.includes('sql')) return <Database size={18} />;
-  if (normalized.includes('infra') || normalized.includes('devops')) return <Terminal size={18} />;
-  if (normalized.includes('ferramenta') || normalized.includes('plataforma')) return <Wrench size={18} />;
+
+  if (normalized.includes("back")) return <Server size={18} />;
+  if (normalized.includes("front")) return <Layout size={18} />;
+  if (normalized.includes("dados") || normalized.includes("sql"))
+    return <Database size={18} />;
+  if (normalized.includes("infra") || normalized.includes("devops"))
+    return <Terminal size={18} />;
+  if (normalized.includes("ferramenta") || normalized.includes("plataforma"))
+    return <Wrench size={18} />;
+
   return <Code2 size={18} />;
 };
 
 export function SkillList({ skillsByCategory }: SkillListProps) {
-  // Estado para controlar qual skill está exibindo sua descrição (tooltip)
+  /**
+   * Controla qual skill está com tooltip aberto.
+   * Mantém UX simples e sem sobreposição de múltiplos popovers.
+   */
   const [activeSkillId, setActiveSkillId] = useState<number | null>(null);
 
+  /**
+   * Alterna o estado do tooltip ao interagir com um skill.
+   */
   const handleInteraction = (id: number) => {
-    // Se já estiver ativo, fecha. Se não, abre o novo.
     setActiveSkillId(activeSkillId === id ? null : id);
   };
 
   return (
     <section className="space-y-8">
-      {/* Cabeçalho da Seção */}
+      {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-[var(--texto-secundario)]/10 text-[var(--background)]">
+        <div className="p-2 rounded-lg bg-muted text-foreground">
           <Code2 size={20} />
         </div>
-        <h3 className="text-xl font-medium text-[var(--background)]">Habilidades</h3>
+        <h3 className="text-xl font-medium text-foreground">Habilidades</h3>
       </div>
 
+      {/* Iteração de categorias */}
       {Object.entries(skillsByCategory).map(([category, list]) => (
         <div key={category} className="space-y-4">
-          
-          {/* Título da Categoria */}
-          <div className="flex items-center gap-2 text-[var(--background)] border-b border-[var(--texto-secundario)]/20 pb-2">
-            <span className="text-[var(--acento-roxo)]">
-              {getIconForCategory(category)}
-            </span>
+          {/* Título da categoria */}
+          <div className="flex items-center gap-2 text-foreground border-b border-border pb-2">
+            <span className="text-[var(--acento-roxo)]">{getIconForCategory(category)}</span>
             <h4 className="font-medium text-sm uppercase tracking-wider opacity-80">
               {category}
             </h4>
           </div>
 
-          {/* Grid de Badges Interativos */}
+          {/* Grid de badges interativos */}
           <div className="flex flex-wrap gap-3">
             {list.map((skill) => {
               const isActive = activeSkillId === skill.id;
 
               return (
                 <div key={skill.id} className="relative group">
-                  
-                  {/* Botão do Badge (Chip) */}
+                  {/* Chip da habilidade */}
                   <button
                     onClick={() => handleInteraction(skill.id)}
                     className={`
                       relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-normal transition-all duration-200 border
-                      ${isActive 
-                        ? 'bg-[var(--background)] text-[var(--branco)] border-[var(--background)] shadow-md scale-105 z-20' 
-                        : 'bg-white text-[var(--background)] border-[var(--texto-secundario)]/30 hover:border-[var(--acento-laranja)] hover:text-[var(--acento-laranja)]'}
+                      ${
+                        isActive
+                          ? "bg-[var(--acento-roxo)] text-white border-[var(--acento-roxo)] shadow-md scale-105 z-20"
+                          : "bg-card text-foreground border-border hover:border-[var(--acento-laranja)] hover:text-[var(--acento-laranja)]"
+                      }
                     `}
                   >
                     {skill.name}
-                    {/* Indicador visual sutil de que existe informação extra */}
+
+                    {/* Ícone exibido somente quando há descrição */}
                     {skill.description && (
-                      <Info size={12} className={`opacity-50 ${isActive ? 'text-[var(--acento-laranja)]' : ''}`} />
+                      <Info
+                        size={12}
+                        className={`opacity-50 ${isActive ? "text-white" : ""}`}
+                      />
                     )}
                   </button>
 
-                  {/* Tooltip / Popover de Descrição 
-                      Renderizado apenas se a skill tiver descrição e estiver ativa.
-                  */}
+                  {/* Tooltip / Popover com descrição técnica da skill */}
                   {isActive && skill.description && (
                     <div className="absolute bottom-full left-0 mb-2 w-64 z-30 animate-in fade-in zoom-in-95 duration-200">
-                      <div className="relative bg-[var(--background)] text-[var(--branco)] text-xs p-3 rounded-xl shadow-xl border border-[var(--acento-laranja)]">
-                        
-                        {/* Seta do Tooltip */}
-                        <div className="absolute -bottom-1.5 left-4 w-3 h-3 bg-[var(--background)] border-b border-r border-[var(--acento-laranja)] rotate-45"></div>
-                        
-                        {/* Conteúdo da Descrição */}
+                      <div className="relative bg-popover text-popover-foreground text-xs p-3 rounded-xl shadow-xl border border-border">
+                        {/* Marcador visual (seta) */}
+                        <div className="absolute -bottom-1.5 left-4 w-3 h-3 bg-popover border-b border-r border-border rotate-45"></div>
+
                         <p className="leading-relaxed font-normal">
                           <span className="block text-[var(--acento-laranja)] font-medium mb-1 text-[10px] uppercase tracking-widest">
                             Detalhes
