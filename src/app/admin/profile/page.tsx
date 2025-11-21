@@ -25,7 +25,7 @@ export default async function EditProfilePage() {
     <div className="w-full max-w-3xl mx-auto bg-white rounded-xl shadow-2xl">
 
       <div className="bg-white rounded-t-xl p-4 flex justify-between items-center border-b border-zinc-300">
-        <h1 className="text-xl font-bold text-[color:var(--acento-verde)]">EDITAR PERFIL</h1>
+        <h1 className="text-xl font-medium text-[color:var(--acento-verde)]">EDITAR PERFIL</h1>
         <Link href="/admin" className="text-sm hover:underline text-[color:var(--acento-verde)]">
           &larr; Voltar ao Painel
         </Link>

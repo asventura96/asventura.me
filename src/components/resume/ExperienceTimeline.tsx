@@ -119,7 +119,7 @@ export function ExperienceTimeline({ experiences }: TimelineProps) {
                 <div className="p-6 flex flex-col md:flex-row gap-4 justify-between items-start relative z-10">
                   {/* Área principal: role + empresa */}
                   <div className="space-y-1 flex-1">
-                    <h4 className="text-lg font-bold text-foreground">
+                    <h4 className="text-lg font-medium text-foreground">
                       {exp.role}
                     </h4>
                     <div className="text-base font-medium text-[var(--acento-roxo)]">

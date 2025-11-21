@@ -163,13 +163,13 @@ export default function ProfileForm({ action, initialData, buttonText }: Profile
           <div className="flex space-x-4">
             <div>
               <label className={labelStyle}>Idade</label>
-              <div className="mt-1 flex items-center justify-center h-10 px-3 py-2 text-lg font-bold text-black">
+              <div className="mt-1 flex items-center justify-center h-10 px-3 py-2 text-lg font-medium text-black">
                 {age !== null ? `${age} anos` : '---'}
               </div>
             </div>
             <div>
               <label className={labelStyle}>Signo</label>
-              <div className="mt-1 flex items-center justify-center h-10 px-3 py-2 text-lg font-bold text-black">
+              <div className="mt-1 flex items-center justify-center h-10 px-3 py-2 text-lg font-medium text-black">
                 {sign}
               </div>
             </div>

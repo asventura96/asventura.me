@@ -85,7 +85,7 @@ export function Hero({ profile }: HeroProps) {
 
           {/* Nome + Cargo. Usa tokens customizados de acento. */}
           <div className="space-y-2">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white uppercase">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white uppercase">
               {profile.name}
             </h1>
             <h2 className="text-xl md:text-2xl text-[var(--acento-laranja)] font-medium">
@@ -200,7 +200,7 @@ export function Hero({ profile }: HeroProps) {
                 priority
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-[var(--texto-secundario)] text-4xl font-bold">
+              <div className="w-full h-full flex items-center justify-center text-[var(--texto-secundario)] text-4xl font-medium">
                 {profile.name.charAt(0)}
               </div>
             )}

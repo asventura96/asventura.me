@@ -29,7 +29,7 @@ export default async function EditEducationPage({ params }: { params: Promise<{ 
     <div className="w-full max-w-3xl mx-auto bg-white rounded-xl shadow-2xl">
       
       <div className="bg-white rounded-t-xl p-4 flex justify-between items-center border-b border-zinc-300">
-        <h1 className="text-xl font-bold text-[color:var(--acento-verde)]">EDITAR FORMAÇÃO</h1>
+        <h1 className="text-xl font-medium text-[color:var(--acento-verde)]">EDITAR FORMAÇÃO</h1>
         <Link href="/admin/education" className="text-sm hover:underline text-[color:var(--acento-verde)]">
           &larr; CANCELAR
         </Link>

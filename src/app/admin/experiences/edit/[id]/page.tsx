@@ -37,7 +37,7 @@ export default async function EditExperiencePage({ params }: { params: Promise<{
 
       {/* HEADER BAR (BRANCO): Texto em VERDE para contraste */}
       <div className="bg-white rounded-t-xl p-4 flex justify-between items-center border-b border-zinc-300">
-        <h1 className="text-xl font-bold text-[color:var(--acento-verde)]">EDITAR EXPERIÊNCIA</h1>
+        <h1 className="text-xl font-medium text-[color:var(--acento-verde)]">EDITAR EXPERIÊNCIA</h1>
         <Link href="/admin/experiences" className="text-sm hover:underline text-[color:var(--acento-verde)]">
           &larr; CANCELAR
         </Link>

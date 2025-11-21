@@ -27,7 +27,7 @@ export default async function Home() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
         <main className="w-full max-w-md p-6 border-l-4 border-[var(--acento-laranja)] bg-card shadow-lg rounded-r">
-          <h1 className="text-xl font-bold mb-2">Erro de Carregamento</h1>
+          <h1 className="text-xl font-medium mb-2">Erro de Carregamento</h1>
           <p className="opacity-70 text-sm">Não foi possível recuperar os dados do perfil.</p>
         </main>
       </div>
@@ -118,7 +118,7 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             {/* INFO DO AUTOR */}
             <div className="space-y-4 text-center md:text-left">
-              <h2 className="text-2xl font-bold tracking-wider uppercase text-[var(--acento-verde)]">
+              <h2 className="text-2xl font-medium tracking-wider uppercase text-[var(--acento-verde)]">
                 {profile.name}
               </h2>
 

@@ -15,7 +15,7 @@ export default function ExperienceItem({ company, role, period, description }: E
       
       {/* Título e Período */}
       <div className="flex justify-between items-start mb-1">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+        <h3 className="text-xl font-medium text-gray-900 dark:text-white">
           {role}
         </h3>
         <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
